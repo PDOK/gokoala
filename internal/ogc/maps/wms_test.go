@@ -46,17 +46,16 @@ var mapsConfig = &config.OgcAPIMaps{
 
 func TestBuildGetMapRequest(t *testing.T) {
 	baselineMapRequest := MapRequest{
-		mapType:     CollectionMap,
-		collection:  "collection1",
-		style:       "default",
-		crs:         "http://www.opengis.net/def/crs/EPSG/0/4326",
-		bboxSRID:    4326,
-		bbox:        geom.NewBounds(geom.XY).Set(52.05, 5.05, 52.14, 5.18),
-		width:       1200,
-		height:      900,
+		mapType:    CollectionMap,
+		collection: "collection1",
+		style:      "default",
+		requested: MapViewParameters{
+			crs: "http://www.opengis.net/def/crs/EPSG/0/4326", bboxSRID: 4326,
+			bbox:  geom.NewBounds(geom.XY).Set(52.05, 5.05, 52.14, 5.18),
+			width: 1200, height: 900, mmPerPixel: 0.28,
+		},
 		transparent: true,
 		format:      "image/png",
-		mmPerPixel:  0.28,
 	}
 	const baselineWMSRequest = "SERVICE=WMS" +
 		"&VERSION=1.3.0" +
@@ -72,11 +71,12 @@ func TestBuildGetMapRequest(t *testing.T) {
 		"&map_resolution=90.714286"
 
 	tests := []struct {
-		name          string
-		change        func(*MapRequest)
-		wantParams    url.Values
-		wantError     string
-		bboxTolerance float64 // Allow small rounding differences after reprojection
+		name           string
+		change         func(*MapRequest)
+		changeResolved func(*MapRequest)
+		wantParams     url.Values
+		wantError      string
+		bboxTolerance  float64 // Allow small rounding differences after reprojection
 	}{
 		{
 			name: "baseline test",
@@ -104,9 +104,9 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht RD bbox with matching CRS",
 			change: func(request *MapRequest) {
-				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
-				request.bboxSRID = 28992
-				request.bbox = geom.NewBounds(geom.XY).Set(131869, 451318, 140816, 461366)
+				request.requested.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
+				request.requested.bboxSRID = 28992
+				request.requested.bbox = geom.NewBounds(geom.XY).Set(131869, 451318, 140816, 461366)
 			},
 			wantParams: url.Values{
 				"CRS":  {"EPSG:28992"},
@@ -123,7 +123,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht EPSG4326 bbox transformed to RD",
 			change: func(request *MapRequest) {
-				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
+				request.requested.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
 			},
 			wantParams: url.Values{
 				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
@@ -133,9 +133,9 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht RD bbox transformed to CRS84",
 			change: func(request *MapRequest) {
-				request.crs = crs84URI
-				request.bboxSRID = 28992
-				request.bbox = geom.NewBounds(geom.XY).Set(131869.474, 451352.254, 140815.394, 461332.147)
+				request.requested.crs = crs84URI
+				request.requested.bboxSRID = 28992
+				request.requested.bbox = geom.NewBounds(geom.XY).Set(131869.474, 451352.254, 140815.394, 461332.147)
 			},
 			wantParams:    url.Values{"CRS": {"CRS:84"}, "BBOX": {"5.05,52.05,5.18,52.14"}},
 			bboxTolerance: 0.000001,
@@ -143,9 +143,9 @@ func TestBuildGetMapRequest(t *testing.T) {
 		{
 			name: "Utrecht default CRS84 bbox transformed to RD",
 			change: func(request *MapRequest) {
-				request.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
-				request.bboxSRID = 0
-				request.bbox = geom.NewBounds(geom.XY).Set(5.05, 52.05, 5.18, 52.14)
+				request.requested.crs = "http://www.opengis.net/def/crs/EPSG/0/28992"
+				request.requested.bboxSRID = 0
+				request.requested.bbox = geom.NewBounds(geom.XY).Set(5.05, 52.05, 5.18, 52.14)
 			},
 			wantParams: url.Values{
 				"CRS": {"EPSG:28992"}, "BBOX": {"131869.474,451352.254,140815.394,461332.147"},
@@ -154,13 +154,13 @@ func TestBuildGetMapRequest(t *testing.T) {
 		},
 		{
 			name:       "custom mm-per-pixel",
-			change:     func(request *MapRequest) { request.mmPerPixel = 0.254 },
+			change:     func(request *MapRequest) { request.requested.mmPerPixel = 0.254 },
 			wantParams: url.Values{"map_resolution": {"100.000000"}},
 		},
 		{
-			name:      "missing bbox",
-			change:    func(request *MapRequest) { request.bbox = nil },
-			wantError: "bbox is required",
+			name:           "missing bbox",
+			changeResolved: func(request *MapRequest) { request.resolved.bbox = nil },
+			wantError:      "bbox is required",
 		},
 	}
 	for _, tt := range tests {
@@ -169,13 +169,17 @@ func TestBuildGetMapRequest(t *testing.T) {
 			if tt.change != nil {
 				tt.change(&request)
 			}
+			require.NoError(t, request.setDefaults(mapsConfig.DefaultMap))
+			if tt.changeResolved != nil {
+				tt.changeResolved(&request)
+			}
 			var originalBBox *geom.Bounds
-			if request.bbox != nil {
+			if request.requested.bbox != nil {
 				originalBBox = geom.NewBounds(geom.XY).Set(
-					request.bbox.Min(0),
-					request.bbox.Min(1),
-					request.bbox.Max(0),
-					request.bbox.Max(1),
+					request.requested.bbox.Min(0),
+					request.requested.bbox.Min(1),
+					request.requested.bbox.Max(0),
+					request.requested.bbox.Max(1),
 				)
 			}
 
@@ -203,7 +207,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 				actual.Del("BBOX")
 			}
 			require.Equal(t, expected, actual)
-			require.Equal(t, originalBBox, request.bbox)
+			require.Equal(t, originalBBox, request.requested.bbox)
 		})
 	}
 }

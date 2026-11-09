@@ -1,13 +1,16 @@
 package engine
 
 import (
+	"encoding/json"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	gokoalaconfig "github.com/PDOK/gokoala/config"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test_newOpenAPI(t *testing.T) {
@@ -131,8 +134,10 @@ func Test_newOpenAPI(t *testing.T) {
 					OgcAPI: gokoalaconfig.OgcAPI{
 						Maps: &gokoalaconfig.OgcAPIMaps{
 							WMSServer: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+							MaxWidth:  6000, MaxHeight: 3000,
 							DefaultMap: gokoalaconfig.DefaultMap{
-								CRS:  "EPSG:28992",
+								CRS:   "EPSG:28992",
+								Width: 1024, Height: 768,
 								Bbox: []string{"10000", "300000", "280000", "620000"},
 							},
 							Collections: []gokoalaconfig.MapsCollection{
@@ -236,8 +241,10 @@ func Test_newOpenAPI(t *testing.T) {
 						},
 						Maps: &gokoalaconfig.OgcAPIMaps{
 							WMSServer: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+							MaxWidth:  4000, MaxHeight: 4000,
 							DefaultMap: gokoalaconfig.DefaultMap{
-								CRS:  "EPSG:28992",
+								CRS:   "EPSG:28992",
+								Width: 1024, Height: 768,
 								Bbox: []string{"10000", "300000", "280000", "620000"},
 							},
 							Collections: []gokoalaconfig.MapsCollection{
@@ -266,6 +273,35 @@ func Test_newOpenAPI(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			openAPI := newOpenAPI(test.args.config, []string{test.args.openAPIFile}, nil)
 			assert.NotNil(t, openAPI)
+
+			if maps := test.args.config.OgcAPI.Maps; maps != nil {
+				var spec struct {
+					Info map[string]json.RawMessage `json:"info"`
+				}
+				require.NoError(t, json.Unmarshal(openAPI.SpecJSON, &spec))
+				var limits struct {
+					Maps map[string]int64 `json:"maps"`
+				}
+				require.NoError(t, json.Unmarshal(spec.Info["x-ogc-limits"], &limits))
+				require.Equal(t, map[string]int64{
+					"maxWidth": int64(maps.MaxWidth), "maxHeight": int64(maps.MaxHeight), "maxPixels": maps.MaxPixels(),
+				}, limits.Maps)
+				for name, maximum := range map[string]int{"width": maps.MaxWidth, "height": maps.MaxHeight} {
+					schema := openAPI.spec.Components.Parameters[name].Value.Schema.Value
+					require.NotNil(t, schema.Max)
+					require.InDelta(t, float64(maximum), *schema.Max, 1e-9)
+					require.NotNil(t, schema.Min)
+					require.InDelta(t, float64(1), *schema.Min, 1e-9)
+				}
+				for _, item := range openAPI.spec.Paths.Map() {
+					if item.Get == nil || !strings.HasSuffix(item.Get.OperationID, ".getMap") {
+						continue
+					}
+					response := item.Get.Responses.Status(413)
+					require.NotNil(t, response)
+					require.NotNil(t, response.Value.Content["application/problem+json"])
+				}
+			}
 
 			// verify resulting OpenAPI spec contains expected strings (keywords, paths, etc)
 			for _, expectedStr := range test.expectedStringsInOpenAPISpec {

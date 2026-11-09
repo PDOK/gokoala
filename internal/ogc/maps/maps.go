@@ -1,6 +1,7 @@
 package maps
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -35,13 +36,6 @@ func (m *Maps) Maps() http.HandlerFunc {
 			params:  r.URL.Query(),
 		}
 
-		defaultCrs, err := getDefaultCrs(m.engine.Config.OgcAPI.Maps.DefaultMap)
-		if err != nil {
-			log.Printf("invalid default map CRS: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
-			return
-		}
-
 		supportedCrs, err := getSupportedCrs(collection)
 		if err != nil {
 			log.Printf("invalid supported map CRSs: %v", err)
@@ -49,7 +43,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 			return
 		}
 
-		request, err := url.parse(defaultCrs, supportedCrs)
+		request, err := url.parse(supportedCrs)
 		if err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
@@ -60,13 +54,21 @@ func (m *Maps) Maps() http.HandlerFunc {
 		request.style = styleID
 
 		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
-			log.Printf("failed to set map defaults: %v", err)
-			engine.RenderProblem(engine.ProblemServerError, w)
+			switch {
+			case errors.Is(err, ErrMapTooLarge):
+				engine.RenderProblem(engine.ProblemRequestEntityTooLarge, w, err.Error())
+			default:
+				engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			}
 			return
 		}
 
-		if err = request.validate(); err != nil {
-			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+		if err = request.validate(m.engine.Config.OgcAPI.Maps); err != nil {
+			kind := engine.ProblemBadRequest
+			if errors.Is(err, ErrMapTooLarge) {
+				kind = engine.ProblemRequestEntityTooLarge
+			}
+			engine.RenderProblem(kind, w, err.Error())
 			return
 		}
 

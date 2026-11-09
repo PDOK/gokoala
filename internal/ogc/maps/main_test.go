@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"image"
 	"image/color"
+	"image/jpeg"
 	"image/png"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -14,6 +16,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/PDOK/gokoala/config"
@@ -276,7 +279,7 @@ func TestContentDatetimeFormat(t *testing.T) {
 	}
 }
 
-// newMockWMS starts a fake WMS server that always responds with a small PNG, regardless of the request.
+// newMockWMS starts a fake WMS server that responds with a small image in the requested format.
 func newMockWMS(t *testing.T, onRequest ...func(*http.Request)) *httptest.Server {
 	t.Helper()
 
@@ -288,11 +291,18 @@ func newMockWMS(t *testing.T, onRequest ...func(*http.Request)) *httptest.Server
 	}
 	var buf bytes.Buffer
 	require.NoError(t, png.Encode(&buf, img))
+	var jpegBuf bytes.Buffer
+	require.NoError(t, jpeg.Encode(&jpegBuf, img, nil))
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		for _, callback := range onRequest {
 			if callback != nil {
 				callback(r)
+			}
+			if r.URL.Query().Get("FORMAT") == "image/jpeg" {
+				w.Header().Set("Content-Type", "image/jpeg")
+				_, _ = w.Write(jpegBuf.Bytes())
+				return
 			}
 		}
 		w.Header().Set("Content-Type", "image/png")
@@ -322,9 +332,11 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 		OgcAPI: config.OgcAPI{
 			Maps: &config.OgcAPIMaps{
 				WMSServer: &config.URL{URL: wms},
+				MaxWidth:  4000,
+				MaxHeight: 4000,
 				DefaultMap: config.DefaultMap{
 					CRS:        "EPSG:28992",
-					Width:      800,
+					Width:      506,
 					Height:     600,
 					Bbox:       []string{"10000", "300000", "280000", "620000"},
 					MMPerPixel: "0.28",
@@ -431,7 +443,7 @@ func TestMapParamsHTTP(t *testing.T) {
 		{name: "width + height", query: "width=800&height=600", wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "all five", query: "crs=" + rd28992URI + "&bbox=" + bboxRD + "&bbox-crs=" + rd28992URI + "&width=800&height=600",
 			wantStatus: http.StatusOK, wantContentCrs: rd},
-		{name: "width equal to max", query: "crs=" + rd28992URI + "&width=5000", wantStatus: http.StatusOK,
+		{name: "width equal to max", query: "crs=" + rd28992URI + "&width=4000&height=4000", wantStatus: http.StatusOK,
 			wantContentCrs: rd, knownDeviation: "D2: value equal to max is accepted"},
 		{name: "invalid width non-numeric", query: "width=abc", wantStatus: http.StatusBadRequest},
 		{name: "invalid width zero", query: "width=0", wantStatus: http.StatusBadRequest,
@@ -440,8 +452,8 @@ func TestMapParamsHTTP(t *testing.T) {
 			knownDeviation: "D1: 20-058 /req/scaling/width-definition C"},
 		{name: "invalid height zero", query: "height=0", wantStatus: http.StatusBadRequest,
 			knownDeviation: "D1: 20-058 /req/scaling/height-definition C"},
-		{name: "invalid width above max", query: "width=5001", wantStatus: http.StatusBadRequest},
-		{name: "invalid height above max", query: "height=5001", wantStatus: http.StatusBadRequest},
+		{name: "invalid width above max", query: "width=4001", wantStatus: http.StatusRequestEntityTooLarge},
+		{name: "invalid height above max", query: "height=4001", wantStatus: http.StatusRequestEntityTooLarge},
 		{name: "invalid crs unknown", query: "crs=" + crsUnknownURI, wantStatus: http.StatusBadRequest},
 		{name: "invalid bbox 3 values", query: "bbox=1,2,3", wantStatus: http.StatusBadRequest},
 		{name: "invalid bbox non-numeric", query: "bbox=a,b,c,d", wantStatus: http.StatusBadRequest},
@@ -450,7 +462,7 @@ func TestMapParamsHTTP(t *testing.T) {
 		{name: "invalid bbox + valid crs and size", query: "crs=" + rd28992URI + "&bbox=1,2,3&width=800&height=600",
 			wantStatus: http.StatusBadRequest},
 		{name: "invalid bbox and width non-numeric", query: "bbox=1,2,3&width=abc", wantStatus: http.StatusBadRequest},
-		{name: "invalid width and height both above max", query: "width=9000&height=9000", wantStatus: http.StatusBadRequest},
+		{name: "invalid width and height both above max", query: "width=9000&height=9000", wantStatus: http.StatusRequestEntityTooLarge},
 	}
 
 	seen := make(map[string]struct{}, len(tests))
@@ -469,6 +481,134 @@ func TestMapParamsHTTP(t *testing.T) {
 				return
 			}
 		})
+	}
+
+}
+
+func TestMapLimitsHTTP(t *testing.T) {
+	for _, mapPath := range []string{
+		"/collections/" + testCollection + "/map",
+		"/collections/" + testCollection + "/styles/" + testStyle + "/map",
+	} {
+		for _, format := range []string{"png", "jpeg", "html"} {
+			for _, tt := range []struct {
+				name                string
+				query               string
+				maxWidth, maxHeight int
+				wantStatus          int
+				wantDetail          string
+			}{
+				{name: "exact custom limits above old ceiling", query: "width=6000&height=3000",
+					maxWidth: 6000, maxHeight: 3000, wantStatus: http.StatusOK},
+				{name: "custom width exceeded", query: "width=6001", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxWidth (6000)"},
+				{name: "custom height exceeded", query: "height=3001", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxHeight (3000)"},
+				{name: "pixel count exceeded", query: "width=6001&height=3000", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxPixels (18000000)"},
+				{name: "default width checked", maxWidth: 505, maxHeight: 3000,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxWidth (505)"},
+				{name: "default height checked", maxWidth: 6000, maxHeight: 599,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxHeight (599)"},
+				{name: "malformed dimension remains bad request", query: "width=abc", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusBadRequest, wantDetail: "not a valid integer"},
+				{name: "non-size validation remains bad request", query: "mm-per-pixel=-1", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusBadRequest, wantDetail: "not a finite positive float"},
+				{name: "calculated height exceeds limit", query: "width=3000", maxWidth: 6000, maxHeight: 3000,
+					wantStatus: http.StatusRequestEntityTooLarge, wantDetail: "maxHeight (3000)"},
+				{name: "calculated dimension overflow", query: "bbox=0,0,1,2&bbox-crs=" + rd28992URI + "&width=" + strconv.Itoa(math.MaxInt),
+					maxWidth: 6000, maxHeight: 3000, wantStatus: http.StatusRequestEntityTooLarge,
+					wantDetail: "calculated image dimension"},
+				{name: "pixel count multiplication overflow", query: "width=" + strconv.Itoa(math.MaxInt) + "&height=" + strconv.Itoa(math.MaxInt),
+					maxWidth: 6000, maxHeight: 3000, wantStatus: http.StatusRequestEntityTooLarge,
+					wantDetail: "maxPixels (18000000)"},
+				{name: "invalid ratio extent", query: "bbox=0,0,0,0&bbox-crs=" + rd28992URI,
+					maxWidth: 6000, maxHeight: 3000, wantStatus: http.StatusBadRequest, wantDetail: "no surface area"},
+			} {
+				t.Run(mapPath+"/"+format+"/"+tt.name, func(t *testing.T) {
+					var calls atomic.Int32
+					wms := newMockWMS(t, func(*http.Request) { calls.Add(1) })
+					router := newTestRouter(t, wms.URL, func(m *config.OgcAPIMaps) {
+						m.MaxWidth, m.MaxHeight = tt.maxWidth, tt.maxHeight
+					})
+					rr := doGet(router, mapPath+"?f="+format+"&"+tt.query, "")
+					require.Equal(t, tt.wantStatus, rr.Code, rr.Body.String())
+					if tt.wantStatus != http.StatusOK {
+						require.Contains(t, rr.Header().Get("Content-Type"), "application/problem+json")
+						require.Contains(t, rr.Body.String(), tt.wantDetail)
+						require.Zero(t, calls.Load(), "invalid maps must not reach WMS")
+					}
+				})
+			}
+		}
+	}
+}
+
+func TestMapViewportHTTP(t *testing.T) {
+	for _, mapPath := range []string{
+		"/collections/" + testCollection + "/map",
+		"/collections/" + testCollection + "/styles/" + testStyle + "/map",
+	} {
+		for _, format := range []string{"png", "jpeg"} {
+			for _, tt := range []struct {
+				name          string
+				query         string
+				width, height int
+				bbox          string
+				crs           string
+				defaults      *config.DefaultMap
+			}{
+				{name: "defaults", width: 506, height: 600, bbox: "10000,300000,280000,620000"},
+				{name: "width", query: "width=600", width: 600, height: 711, bbox: "10000,300000,280000,620000"},
+				{name: "height", query: "height=700", width: 591, height: 700, bbox: "10000,300000,280000,620000"},
+				{name: "width and height", query: "width=1200&height=900", width: 1200, height: 900,
+					bbox: "-175000,220000,465000,700000"},
+				{name: "bbox only", query: "bbox=0,0,2,1&bbox-crs=" + rd28992URI,
+					width: 1200, height: 600, bbox: "0,0,2,1"},
+				{name: "bbox and width", query: "bbox=0,0,2,1&bbox-crs=" + rd28992URI + "&width=800",
+					width: 800, height: 400, bbox: "0,0,2,1"},
+				{name: "bbox and height", query: "bbox=0,0,2,1&bbox-crs=" + rd28992URI + "&height=300",
+					width: 600, height: 300, bbox: "0,0,2,1"},
+				{name: "explicit distortion", query: "bbox=0,0,2,1&bbox-crs=" + rd28992URI + "&width=100&height=100",
+					width: 100, height: 100, bbox: "0,0,2,1"},
+				{name: "native EPSG4326 axes", query: "crs=" + crsEPSG4326URI + "&bbox=50,4,51,6&bbox-crs=" + crsEPSG4326URI + "&width=600",
+					width: 600, height: 300, bbox: "50,4,51,6", crs: crsEPSG4326URI},
+				{name: "CRS84 to EPSG4326", query: "crs=" + crsEPSG4326URI + "&bbox=4,50,6,51&width=600",
+					width: 600, height: 300, bbox: "50,4,51,6", crs: crsEPSG4326URI},
+				{name: "default bbox to CRS84", query: "crs=" + crs84URI + "&width=600",
+					width: 600, height: 300, bbox: "4,50,6,51", crs: crs84URI,
+					defaults: &config.DefaultMap{CRS: "EPSG:4326", Width: 800, Height: 400,
+						Bbox: []string{"50", "4", "51", "6"}, MMPerPixel: "0.28"}},
+				{name: "projected bbox to geographic", query: "crs=" + crs84URI + "&bbox=131869.474,451352.254,140815.394,461332.147&bbox-crs=" + rd28992URI + "&width=600",
+					width: 600, height: 415, bbox: "5.05,52.05,5.18,52.14", crs: crs84URI},
+				{name: "implicit bbox in EPSG4326", query: "crs=" + crsEPSG4326URI + "&width=600&height=600",
+					width: 600, height: 600, bbox: "49.75,4.25,51.25,5.75", crs: crsEPSG4326URI,
+					defaults: &config.DefaultMap{CRS: "EPSG:4326", Width: 800, Height: 400,
+						Bbox: []string{"50", "4", "51", "6"}, MMPerPixel: "0.28"}},
+			} {
+				t.Run(mapPath+"/"+format+"/"+tt.name, func(t *testing.T) {
+					var params url.Values
+					wms := newMockWMS(t, func(r *http.Request) { params = r.URL.Query() })
+					router := newTestRouter(t, wms.URL, func(m *config.OgcAPIMaps) {
+						if tt.defaults != nil {
+							m.DefaultMap = *tt.defaults
+						}
+					})
+					rr := doGet(router, mapPath+"?f="+format+"&mm-per-pixel=0.254&"+tt.query, "")
+					require.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
+					require.Equal(t, strconv.Itoa(tt.width), params.Get("WIDTH"))
+					require.Equal(t, strconv.Itoa(tt.height), params.Get("HEIGHT"))
+					requireBBoxWithinTolerance(t, tt.bbox, params.Get("BBOX"), 1e-6)
+					require.Equal(t, params.Get("BBOX"), rr.Header().Get("Content-Bbox"))
+					crs := tt.crs
+					if crs == "" {
+						crs = rd28992URI
+					}
+					require.Equal(t, "<"+crs+">", rr.Header().Get("Content-Crs"))
+					require.Equal(t, "100.000000", params.Get("map_resolution"))
+				})
+			}
+		}
 	}
 }
 

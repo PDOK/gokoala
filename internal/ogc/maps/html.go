@@ -61,12 +61,8 @@ func newHTMLMaps(e *engine.Engine) *htmlMaps {
 func (hm *htmlMaps) maps(w http.ResponseWriter, r *http.Request, format string, collection config.MapsCollection,
 	request MapRequest) {
 
-	bbox := request.bbox
-	if r.URL.Query().Get(BboxParam) == "" {
-		bbox = nil
-	}
 	style := collection.GetStyle(request.style)
-	breadcrumbs, pageContent := hm.toViewerPage(collection, style, request.crs, bbox)
+	breadcrumbs, pageContent := hm.toViewerPage(collection, style, request.resolved.crs, request.resolved.bbox)
 	pageContent.Transparent = request.transparent
 
 	hm.engine.RenderAndServe(w, r,

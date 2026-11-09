@@ -141,7 +141,9 @@ ogcApi:
     wmsServer: https://example.com/wms
     defaultMap:
       crs: EPSG:28992
-      bbox: ["10000", "300000", "280000", "620000"]
+      width: 1024
+      height: 768
+      bbox: ["-90000", "300000", "390000", "660000"]
     collections:
       - id: addresses
         metadata: *addressMetadata

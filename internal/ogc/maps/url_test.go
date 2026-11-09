@@ -33,7 +33,7 @@ type paramCase struct {
 
 var paramCases = []paramCase{
 	// all single parameters
-	{name: "none", query: "", wantCRS: rd28992URI, wantTransparent: true},
+	{name: "none", query: "", wantTransparent: true},
 	{name: "transparent true", query: "transparent=true", wantTransparent: true},
 	{name: "transparent false", query: "transparent=false", wantTransparent: false},
 	{name: "transparent invalid", query: "transparent=yes", wantErr: true},
@@ -45,6 +45,8 @@ var paramCases = []paramCase{
 	{name: "width only", query: "width=800", wantWidth: 800, wantTransparent: true},
 	{name: "height only", query: "height=600", wantHeight: 600, wantTransparent: true},
 	{name: "crs only", query: "crs=" + rd28992URI, wantCRS: rd28992URI, wantTransparent: true},
+	{name: "whitespace crs", query: "crs=+++", wantTransparent: true},
+	{name: "trimmed crs", query: "crs=++" + crs84URI + "++", wantCRS: crs84URI, wantTransparent: true},
 	{name: "bbox only", query: "bbox=" + bboxCRS84, wantBboxSRID: domain.WGS84SRID, wantBbox: []float64{4, 52, 5, 53}, wantTransparent: true},
 	{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI, wantTransparent: true},
 	{name: "invalid bbox-crs without bbox is ignored", query: "bbox-crs=foo", wantTransparent: true,
@@ -80,8 +82,8 @@ var paramCases = []paramCase{
 		knownDeviation: "D1: 20-058 /req/scaling/height-definition C, non-positive height must be rejected"},
 	{name: "invalid height negative", query: "height=-5", wantErr: true,
 		knownDeviation: "D1: 20-058 /req/scaling/height-definition C, non-positive height must be rejected"},
-	{name: "invalid width above max", query: "width=5001", wantErr: true},
-	{name: "invalid height above max", query: "height=5001", wantErr: true},
+	{name: "width above former parser limit", query: "width=5001", wantWidth: 5001, wantTransparent: true},
+	{name: "height above former parser limit", query: "height=5001", wantHeight: 5001, wantTransparent: true},
 	{name: "invalid crs unknown", query: "crs=" + crsUnknownURI, wantErr: true},
 	{name: "invalid bbox 3 values", query: "bbox=1,2,3", wantErr: true},
 	{name: "invalid bbox 5 values", query: "bbox=1,2,3,4,5", wantErr: true},
@@ -97,10 +99,10 @@ var paramCases = []paramCase{
 		wantErr: true, knownDeviation: "D1: 20-058 /req/scaling/width-definition C"},
 	{name: "invalid width non-numeric + valid others", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&height=600&width=abc",
 		wantErr: true},
-	{name: "invalid width above max + valid others", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&height=600&width=9000",
-		wantErr: true},
-	{name: "invalid height above max + valid others", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&width=800&height=9000",
-		wantErr: true},
+	{name: "large width + valid others", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&height=600&width=9000",
+		wantCRS: rd28992URI, wantBbox: []float64{4, 52, 5, 53}, wantWidth: 9000, wantHeight: 600, wantTransparent: true},
+	{name: "large height + valid others", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&width=800&height=9000",
+		wantCRS: rd28992URI, wantBbox: []float64{4, 52, 5, 53}, wantWidth: 800, wantHeight: 9000, wantTransparent: true},
 	{name: "invalid crs + valid bbox and width", query: "crs=" + crsUnknownURI + "&bbox=" + bboxCRS84 + "&width=800",
 		wantErr: true},
 	{name: "invalid bbox + valid crs and size", query: "crs=" + rd28992URI + "&bbox=1,2,3&width=800&height=600",
@@ -108,7 +110,7 @@ var paramCases = []paramCase{
 	{name: "invalid bbox-crs + valid crs, bbox and size", query: "crs=" + rd28992URI + "&bbox=" + bboxCRS84 + "&bbox-crs=foo&width=800&height=600",
 		wantErr: true},
 
-	{name: "invalid width and height both above max", query: "width=9000&height=9000", wantErr: true},
+	{name: "large width and height", query: "width=9000&height=9000", wantWidth: 9000, wantHeight: 9000, wantTransparent: true},
 	{name: "invalid bbox and width non-numeric", query: "bbox=1,2,3&width=abc", wantErr: true},
 	{name: "invalid crs and bbox-crs", query: "crs=" + crsUnknownURI + "&bbox=" + bboxCRS84 + "&bbox-crs=foo",
 		wantErr: true},
@@ -123,7 +125,7 @@ var paramCases = []paramCase{
 	{name: "empty width", query: "width=", wantTransparent: true},
 	{name: "empty height", query: "height=", wantTransparent: true},
 	{name: "empty bbox", query: "bbox=", wantTransparent: true},
-	{name: "empty crs", query: "crs=", wantCRS: rd28992URI, wantTransparent: true},
+	{name: "empty crs", query: "crs=", wantTransparent: true},
 	{name: "empty bbox-crs", query: "bbox-crs=", wantTransparent: true},
 	{name: "repeated width uses first value", query: "width=100&width=200", wantWidth: 100, wantTransparent: true},
 	{name: "valid crs with invalid bbox", query: "crs=" + rd28992URI + "&bbox=1,2", wantErr: true},
@@ -145,7 +147,7 @@ func TestMapParamsParse(t *testing.T) {
 			require.NoError(t, err)
 			m := mapsURL{params: params}
 
-			request, err := m.parse(rd28992URI, supportedCrs)
+			request, err := m.parse(supportedCrs)
 
 			if tc.wantErr {
 				require.Error(t, err, tc.knownDeviation)
@@ -154,18 +156,18 @@ func TestMapParamsParse(t *testing.T) {
 			}
 
 			require.NoError(t, err, tc.knownDeviation)
-			if tc.wantCRS != "" {
-				assert.Equal(t, tc.wantCRS, request.crs, tc.knownDeviation)
-			}
-			assert.Equal(t, tc.wantBboxSRID.GetOrDefault(), request.bboxSRID.GetOrDefault(), tc.knownDeviation)
+			assert.Equal(t, tc.wantCRS, request.requested.crs, tc.knownDeviation)
+			assert.Equal(t, tc.wantBboxSRID.GetOrDefault(), request.requested.bboxSRID.GetOrDefault(), tc.knownDeviation)
+			assert.Equal(t, MapViewParameters{}, request.resolved)
 			if tc.wantBbox == nil {
-				assert.Nil(t, request.bbox, tc.knownDeviation)
+				assert.Nil(t, request.requested.bbox, tc.knownDeviation)
 			} else {
-				require.NotNil(t, request.bbox, tc.knownDeviation)
-				assert.Equal(t, tc.wantBbox, []float64{request.bbox.Min(0), request.bbox.Min(1), request.bbox.Max(0), request.bbox.Max(1)}, tc.knownDeviation)
+				bbox := request.requested.bbox
+				require.NotNil(t, bbox, tc.knownDeviation)
+				assert.Equal(t, tc.wantBbox, []float64{bbox.Min(0), bbox.Min(1), bbox.Max(0), bbox.Max(1)}, tc.knownDeviation)
 			}
-			assert.Equal(t, tc.wantWidth, request.width, tc.knownDeviation)
-			assert.Equal(t, tc.wantHeight, request.height, tc.knownDeviation)
+			assert.Equal(t, tc.wantWidth, request.requested.width, tc.knownDeviation)
+			assert.Equal(t, tc.wantHeight, request.requested.height, tc.knownDeviation)
 			assert.Equal(t, tc.wantTransparent, request.transparent)
 		})
 	}

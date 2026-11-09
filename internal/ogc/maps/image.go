@@ -46,7 +46,7 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 		if err := validateGetMapResponse(response, request.format); err != nil {
 			return err
 		}
-		response.Header.Set(engine.HeaderContentCrs, request.crs.ToLink())
+		response.Header.Set(engine.HeaderContentCrs, request.resolved.crs.ToLink())
 		response.Header.Set(engine.HeaderContentBbox, getMapParams.Get("BBOX"))
 		return nil
 	})

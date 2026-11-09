@@ -5,12 +5,25 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 )
 
 // +kubebuilder:object:generate=true
 type OgcAPIMaps struct {
 	// Base URL of the MapServer WMS service.
 	WMSServer *URL `yaml:"wmsServer" json:"wmsServer" validate:"required"`
+
+	// Maximum map width in pixels.
+	// +optional
+	// +kubebuilder:default=4000
+	// +kubebuilder:validation:Minimum=1
+	MaxWidth int `yaml:"maxWidth,omitempty" json:"maxWidth,omitempty" default:"4000" validate:"gt=0"`
+
+	// Maximum map height in pixels.
+	// +optional
+	// +kubebuilder:default=4000
+	// +kubebuilder:validation:Minimum=1
+	MaxHeight int `yaml:"maxHeight,omitempty" json:"maxHeight,omitempty" default:"4000" validate:"gt=0"`
 
 	// Default map view used when request parameters are omitted.
 	DefaultMap DefaultMap `yaml:"defaultMap" json:"defaultMap" validate:"required"`
@@ -32,15 +45,13 @@ func (csm MapsCollections) ContainsID(id string) bool {
 }
 
 func (o *OgcAPIMaps) Defaults() {
-	if o.DefaultMap.Width == 0 {
-		o.DefaultMap.Width = 1024
-	}
-	if o.DefaultMap.Height == 0 {
-		o.DefaultMap.Height = 768
-	}
 	if o.DefaultMap.MMPerPixel == "" {
 		o.DefaultMap.MMPerPixel = "0.28"
 	}
+}
+
+func (o *OgcAPIMaps) MaxPixels() int64 {
+	return int64(o.MaxWidth) * int64(o.MaxHeight)
 }
 
 // +kubebuilder:object:generate=true
@@ -53,13 +64,13 @@ type DefaultMap struct {
 	// +optional
 	// +kubebuilder:default=1024
 	// +kubebuilder:validation:Minimum=1
-	Width int `yaml:"width,omitempty" json:"width,omitempty" validate:"gt=0"`
+	Width int `yaml:"width,omitempty" json:"width,omitempty" default:"1024" validate:"gt=0"`
 
 	// Height of the map image in pixels. Defaults to 768.
 	// +optional
 	// +kubebuilder:default=768
 	// +kubebuilder:validation:Minimum=1
-	Height int `yaml:"height,omitempty" json:"height,omitempty" validate:"gt=0"`
+	Height int `yaml:"height,omitempty" json:"height,omitempty" default:"768" validate:"gt=0"`
 
 	// Bounding box of the default map view.
 	// +kubebuilder:validation:MinItems=4
@@ -167,14 +178,30 @@ type MapStyle struct {
 	WMSStyle string `yaml:"wmsStyle" json:"wmsStyle" validate:"required"`
 }
 
-func validateMapCollections(collections []MapsCollection) error {
+func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
 	var errMessages []string
+	defaultCode, defaultErr := parseMapEPSGCode(defaultCRS)
 	collectionIDs := make(map[string]struct{})
 	for _, collection := range collections {
 		if _, exists := collectionIDs[collection.ID]; exists {
 			errMessages = append(errMessages, fmt.Sprintf("duplicate maps collection ID '%s'", collection.ID))
 		}
 		collectionIDs[collection.ID] = struct{}{}
+
+		supported := false
+		for _, srs := range collection.SupportedSrs {
+			code, err := parseMapEPSGCode(srs.Srs)
+			if err != nil {
+				errMessages = append(errMessages, fmt.Sprintf("invalid supported CRS for maps collection %q: %v", collection.ID, err))
+				continue
+			}
+			if defaultErr == nil && code == defaultCode {
+				supported = true
+			}
+		}
+		if defaultErr == nil && !supported {
+			errMessages = append(errMessages, fmt.Sprintf("default map CRS %q must be supported by maps collection %q", defaultCRS, collection.ID))
+		}
 
 		layerIDs := make(map[string]struct{})
 		for _, layer := range collection.Layers {
@@ -200,10 +227,80 @@ func validateMapCollections(collections []MapsCollection) error {
 	return nil
 }
 
-func validateDefaultsForMaps(dm DefaultMap) error {
-	mmPerPixelError := validateMMPerPixel(dm.MMPerPixel)
+func validateMapDefaults(dm DefaultMap) error {
+	return errors.Join(
+		validateMMPerPixel(dm.MMPerPixel),
+		validateMapCRS(dm.CRS),
+		validateMapBbox(dm.Bbox),
+	)
+}
 
-	return errors.Join(mmPerPixelError)
+func validateMapBbox(bbox []string) error {
+	if len(bbox) != 4 {
+		return errors.New("default map bbox must contain four coordinates")
+	}
+	var coordinates [4]float64
+	for index, coordinate := range bbox {
+		value, err := strconv.ParseFloat(coordinate, 64)
+		if err != nil {
+			return fmt.Errorf("invalid default map bbox coordinate %q: %w", coordinate, err)
+		}
+		if math.IsNaN(value) || math.IsInf(value, 0) {
+			return fmt.Errorf("default map bbox coordinate %q must be finite", coordinate)
+		}
+		coordinates[index] = value
+	}
+	width := coordinates[2] - coordinates[0]
+	height := coordinates[3] - coordinates[1]
+	if width <= 0 || height <= 0 || math.IsInf(width, 0) || math.IsInf(height, 0) {
+		return errors.New("default map bbox must have finite positive extents")
+	}
+	ratio := width / height
+	if ratio <= 0 || math.IsInf(ratio, 0) {
+		return errors.New("default map bbox must have a finite positive aspect ratio")
+	}
+	return nil
+}
+
+func validateMapCRS(crs string) error {
+	_, err := parseMapEPSGCode(crs)
+	if err != nil {
+		return fmt.Errorf("invalid default map CRS: %w", err)
+	}
+	return nil
+}
+
+func parseMapEPSGCode(crs string) (int, error) {
+	code, found := strings.CutPrefix(crs, "EPSG:")
+	if !found || code == "" || strings.Trim(code, "0123456789") != "" {
+		return 0, fmt.Errorf("expected EPSG CRS with a positive numeric code, got %q", crs)
+	}
+	value, err := strconv.Atoi(code)
+	if err != nil {
+		return 0, fmt.Errorf("invalid EPSG code in %q: %w", crs, err)
+	}
+	if value <= 0 {
+		return 0, fmt.Errorf("EPSG code must be positive, got %q", crs)
+	}
+	return value, nil
+}
+
+func validateMapLimits(o *OgcAPIMaps) error {
+	var errMessages []string
+	largestSafeWidth := int64(math.MaxInt64) / int64(o.MaxHeight)
+	if int64(o.MaxWidth) > largestSafeWidth {
+		errMessages = append(errMessages, "maps maxWidth times maxHeight exceeds the maximum supported pixel count")
+	}
+	if o.DefaultMap.Width > o.MaxWidth {
+		errMessages = append(errMessages, fmt.Sprintf("maps defaultMap.width must not exceed maxWidth (%d)", o.MaxWidth))
+	}
+	if o.DefaultMap.Height > o.MaxHeight {
+		errMessages = append(errMessages, fmt.Sprintf("maps defaultMap.height must not exceed maxHeight (%d)", o.MaxHeight))
+	}
+	if len(errMessages) > 0 {
+		return fmt.Errorf("invalid config provided:\n%v", errMessages)
+	}
+	return nil
 }
 
 func validateMMPerPixel(mmPerPixel string) error {
