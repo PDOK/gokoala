@@ -47,16 +47,11 @@ func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 		return MapRequest{}, err
 	}
 
-	crs := parseCrsToContentCrs(m.params)
-	var crsErr error
-	if crs != "" {
+	crs, crsErr := parseCrsParam(m.params, CrsParam)
+	if crsErr == nil && crs != "" {
 		crsErr = validateSupportedCrs(CrsParam, crs, supportedCrs)
 	}
 	bbox, bboxSRID, bboxErr := parseBbox(m.params)
-	if bboxErr == nil && bbox != nil && m.params.Get(BboxCrsParam) != "" {
-		bboxCrs := domain.ContentCrs(m.params.Get(BboxCrsParam))
-		bboxErr = validateSupportedCrs(BboxCrsParam, bboxCrs, supportedCrs)
-	}
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
@@ -87,7 +82,14 @@ func parseBbox(params url.Values) (*geom.Bounds, domain.SRID, error) {
 		return nil, domain.UndefinedSRID, nil
 	}
 
-	bbox, bboxSRID, err := features.ParseBbox(params)
+	crs, err := parseCrsParam(params, BboxCrsParam)
+	if err != nil {
+		return nil, domain.UndefinedSRID, err
+	}
+	bbox, bboxSRID, err := features.ParseBbox(url.Values{
+		BboxParam:    {params.Get(BboxParam)},
+		BboxCrsParam: {string(crs)},
+	})
 	if err != nil {
 		return nil, bboxSRID, err
 	}
@@ -150,8 +152,46 @@ func parseAndValidatePositiveInt(intStr string) (int, error) {
 	return i, err
 }
 
-func parseCrsToContentCrs(params url.Values) domain.ContentCrs {
-	return domain.ContentCrs(strings.TrimSpace(params.Get(CrsParam)))
+// parseCrsParam normalizes and parses a given crs param (i.e. 'crs', 'bbox-crs', etc.).
+func parseCrsParam(params url.Values, name string) (domain.ContentCrs, error) {
+	identifier := strings.TrimSpace(params.Get(name))
+	if identifier == "" {
+		return "", nil
+	}
+	crs, _, err := parseCrs(identifier)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", name, err)
+	}
+	return crs, nil
+}
+
+func parseCrs(identifier string) (domain.ContentCrs, domain.SRID, error) {
+	identifier = strings.TrimSpace(identifier)
+	
+	// Handle Safe CURIE
+	if domain.HasSafeCURIESyntax(identifier) {
+		srid, err := domain.ParseSafeCURIEToSRID(identifier)
+		if err != nil {
+			return "", domain.UndefinedSRID, err
+		}
+		if identifier == "["+domain.OGCPrefix+domain.WGS84CodeOGC+"]" {
+			return domain.ContentCrs(domain.WGS84CrsURI), srid, nil
+		}
+		return srid.ToContentCrs(), srid, nil
+	}
+
+	// Handle CRS URIs
+	if identifier != domain.WGS84CrsURI && !strings.HasPrefix(identifier, domain.CrsURIPrefix+"EPSG/0/") {
+		return "", domain.UndefinedSRID, fmt.Errorf("expected an EPSG CRS URI or CRS84 URI, got %q", identifier)
+	}
+	srid, err := domain.ParseCrsURIToSRID(identifier)
+	if err != nil {
+		return "", domain.UndefinedSRID, fmt.Errorf("invalid CRS %q: %w", identifier, err)
+	}
+	if srid <= 0 {
+		return "", domain.UndefinedSRID, fmt.Errorf("CRS code must be positive, got %q", identifier)
+	}
+	return domain.ContentCrs(identifier), srid, nil
 }
 
 func parseMMPerPixel(params url.Values) (float64, error) {

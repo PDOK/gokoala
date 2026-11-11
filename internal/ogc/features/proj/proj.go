@@ -28,7 +28,21 @@ type Info struct {
 	} `json:"coordinate_system"` //nolint:tagliatelle
 }
 
-// GetAxisOrder return XY or YX axis order for the given SRID.
+// GetAxisOrderForCRS returns XY or YX axis order for the given SRID.
+// epsg must be a CRS identifier such as "EPSG:28992" or "OGC:CRS84"
+func GetAxisOrderForCRS(epsg string) (domain.AxisOrder, error) {
+	projJSON, err := ExecProjInfo(epsg)
+	if err != nil {
+		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", epsg, err)
+	}
+	axisOrder, err := GetAxisOrder(projJSON)
+	if err != nil {
+		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", epsg, err)
+	}
+	return axisOrder, nil
+}
+
+// GetAxisOrder returns XY or YX axis order for the given SRID in PROJJSON format.
 func GetAxisOrder(projJSON string) (domain.AxisOrder, error) {
 	var projInfo Info
 	if err := json.Unmarshal([]byte(projJSON), &projInfo); err != nil {

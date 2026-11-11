@@ -91,7 +91,8 @@ var paramCases = []paramCase{
 	{name: "invalid bbox min greater than max", query: "bbox=4,53,5,52", wantErr: true},
 	{name: "invalid bbox min x greater than max x", query: "bbox=179,52,-179,53", wantErr: true},
 	{name: "invalid bbox zero area", query: "bbox=4,52,4,53", wantErr: true},
-	{name: "invalid bbox-crs unknown with bbox", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + crsUnknownURI, wantErr: true},
+	{name: "bbox-crs existence is checked during resolution", query: "bbox=" + bboxCRS84 + "&bbox-crs=" + crsUnknownURI,
+		wantBboxSRID: 999999, wantBbox: []float64{4, 52, 5, 53}, wantTransparent: true},
 	{name: "invalid bbox-crs not a URI with bbox", query: "bbox=" + bboxCRS84 + "&bbox-crs=foo", wantErr: true},
 
 	// errors but combined with valid params
