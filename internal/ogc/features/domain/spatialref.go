@@ -74,6 +74,36 @@ func ParseCrsURIToSRID(identifier string) (SRID, error) {
 	return SRID(value), nil
 }
 
+// HasSafeCURIESyntax checks if CRS identifier looks like a safe CURIE (enclosed in brackets).
+func HasSafeCURIESyntax(identifier string) bool {
+	return strings.HasPrefix(identifier, "[") && strings.HasSuffix(identifier, "]")
+}
+
+// ParseSafeCURIEToSRID parses bracketed EPSG identifiers or [OGC:CRS84].
+func ParseSafeCURIEToSRID(identifier string) (SRID, error) {
+	identifier = strings.TrimSpace(identifier)
+	if !HasSafeCURIESyntax(identifier) {
+		return UndefinedSRID, fmt.Errorf("safe CURIE must be enclosed in brackets, got %q", identifier)
+	}
+	value := identifier[1 : len(identifier)-1]
+	if value == OGCPrefix+WGS84CodeOGC {
+		return WGS84SRID, nil
+	}
+	code, found := strings.CutPrefix(value, EPSGPrefix)
+	if !found || code == "" || strings.ContainsAny(code, "[]") ||
+		strings.ContainsFunc(code, func(r rune) bool { return r < '0' || r > '9' }) {
+		return UndefinedSRID, fmt.Errorf("expected [EPSG:positive-integer] or [OGC:CRS84], got %q", identifier)
+	}
+	srid, err := EpsgToSrid(value)
+	if err != nil {
+		return UndefinedSRID, err
+	}
+	if srid <= 0 {
+		return UndefinedSRID, fmt.Errorf("CRS code must be positive, got %q", identifier)
+	}
+	return srid, nil
+}
+
 // ContentCrs the coordinate reference system (represented as a URI) of the content/output to return.
 type ContentCrs string
 

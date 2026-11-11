@@ -110,7 +110,7 @@ func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCol
 }
 
 func getCRS(mapRequest *MapRequest) (*wms130.CRS, error) {
-	srid, err := mapCRSToSRID(mapRequest.resolved.crs)
+	_, srid, err := parseCrs(string(mapRequest.resolved.crs))
 	if err != nil {
 		return nil, err
 	}

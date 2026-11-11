@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
@@ -148,7 +147,7 @@ func (resolved MapViewParameters) resolveNormalizedOutputBbox() (*geom.Bounds, b
 	if resolved.bbox == nil {
 		return nil, false, domain.UndefinedSRID, errors.New("bbox is required")
 	}
-	outputSRID, err := mapCRSToSRID(resolved.crs)
+	_, outputSRID, err := parseCrs(string(resolved.crs))
 	if err != nil {
 		return nil, false, domain.UndefinedSRID, err
 	}
@@ -166,7 +165,7 @@ func (resolved MapViewParameters) resolveNormalizedOutputBbox() (*geom.Bounds, b
 	if crs84 {
 		srs = crs84SRS
 	}
-	order, err := getAxisOrder(srs)
+	order, err := proj.GetAxisOrderForCRS(srs)
 	if err != nil {
 		return nil, false, domain.UndefinedSRID, err
 	}
@@ -181,36 +180,6 @@ func swapBboxAxes(bbox *geom.Bounds) *geom.Bounds {
 	return geom.NewBounds(geom.XY).Set(bbox.Min(1), bbox.Min(0), bbox.Max(1), bbox.Max(0))
 }
 
-func mapCRSToSRID(crs domain.ContentCrs) (domain.SRID, error) {
-	crsURI := strings.TrimSpace(string(crs))
-	if crsURI == domain.WGS84CrsURI {
-		return domain.WGS84SRID, nil
-	}
-	if !strings.HasPrefix(crsURI, domain.CrsURIPrefix+"EPSG/0/") {
-		return domain.UndefinedSRID, fmt.Errorf("expected an EPSG CRS URI or CRS84 URI, got %q", crs)
-	}
-	srid, err := domain.ParseCrsURIToSRID(crsURI)
-	if err != nil {
-		return domain.UndefinedSRID, fmt.Errorf("invalid CRS %q: %w", crs, err)
-	}
-	if srid <= 0 {
-		return domain.UndefinedSRID, fmt.Errorf("CRS code must be positive, got %q", crs)
-	}
-	return srid, nil
-}
-
-func getAxisOrder(srs string) (domain.AxisOrder, error) {
-	projJSON, err := proj.ExecProjInfo(srs)
-	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", srs, err)
-	}
-	axisOrder, err := proj.GetAxisOrder(projJSON)
-	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", srs, err)
-	}
-	return axisOrder, nil
-}
-
 func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS84 bool) ([4]float64, error) {
 	inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
 	if inputSRID == domain.WGS84SRID {
@@ -220,11 +189,11 @@ func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS8
 	if outputCRS84 {
 		outputSRS = crs84SRS
 	}
-	inputAxisOrder, err := getAxisOrder(inputSRS)
+	inputAxisOrder, err := proj.GetAxisOrderForCRS(inputSRS)
 	if err != nil {
 		return [4]float64{}, err
 	}
-	outputAxisOrder, err := getAxisOrder(outputSRS)
+	outputAxisOrder, err := proj.GetAxisOrderForCRS(outputSRS)
 	if err != nil {
 		return [4]float64{}, err
 	}
@@ -260,7 +229,7 @@ func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
 	if _, err := util.BboxAspectRatio(resolved.bbox); err != nil {
 		return fmt.Errorf("invalid resolved bbox: %w", err)
 	}
-	bboxSRID, err := mapCRSToSRID(resolved.crs)
+	_, bboxSRID, err := parseCrs(string(resolved.crs))
 	if err != nil {
 		return err
 	}
