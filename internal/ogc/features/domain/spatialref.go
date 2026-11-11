@@ -56,6 +56,24 @@ func EpsgToSrid(srs string) (SRID, error) {
 	return SRID(srid), nil
 }
 
+// ParseCrsURIToSRID parses an HTTP OGC CRS identifier.
+func ParseCrsURIToSRID(identifier string) (SRID, error) {
+	identifier = strings.TrimSpace(identifier)
+	if !strings.HasPrefix(identifier, CrsURIPrefix) {
+		return UndefinedSRID, fmt.Errorf("should start with %s, got: %s", CrsURIPrefix, identifier)
+	}
+	crsCode := identifier[strings.LastIndex(identifier, "/")+1:]
+	if crsCode == WGS84CodeOGC {
+		// CRS84 uses WGS84 with longitude/latitude axis order, unlike EPSG:4326.
+		return WGS84SRID, nil
+	}
+	value, err := strconv.Atoi(crsCode)
+	if err != nil {
+		return UndefinedSRID, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
+	}
+	return SRID(value), nil
+}
+
 // ContentCrs the coordinate reference system (represented as a URI) of the content/output to return.
 type ContentCrs string
 

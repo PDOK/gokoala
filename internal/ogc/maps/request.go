@@ -3,13 +3,11 @@ package maps
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"strconv"
 	"strings"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine/util"
-	"github.com/PDOK/gokoala/internal/ogc/features"
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/PDOK/gokoala/internal/ogc/features/proj"
 	"github.com/twpayne/go-geom"
@@ -191,7 +189,7 @@ func mapCRSToSRID(crs domain.ContentCrs) (domain.SRID, error) {
 	if !strings.HasPrefix(crsURI, domain.CrsURIPrefix+"EPSG/0/") {
 		return domain.UndefinedSRID, fmt.Errorf("expected an EPSG CRS URI or CRS84 URI, got %q", crs)
 	}
-	srid, err := features.ParseCrsToSRID(url.Values{CrsParam: {crsURI}}, CrsParam)
+	srid, err := domain.ParseCrsURIToSRID(crsURI)
 	if err != nil {
 		return domain.UndefinedSRID, fmt.Errorf("invalid CRS %q: %w", crs, err)
 	}

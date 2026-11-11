@@ -326,24 +326,10 @@ func ParseCrsToSRID(params url.Values, paramName string) (d.SRID, error) {
 	if param == "" {
 		return d.UndefinedSRID, nil
 	}
-	param = strings.TrimSpace(param)
-	if !strings.HasPrefix(param, d.CrsURIPrefix) {
-		return d.UndefinedSRID, fmt.Errorf("%s param should start with %s, got: %s", paramName, d.CrsURIPrefix, param)
+	srid, err := d.ParseCrsURIToSRID(param)
+	if err != nil {
+		return d.UndefinedSRID, fmt.Errorf("%s param %w", paramName, err)
 	}
-	var srid d.SRID
-	lastIndex := strings.LastIndex(param, "/")
-	if lastIndex != -1 {
-		crsCode := param[lastIndex+1:]
-		if crsCode == d.WGS84CodeOGC {
-			return d.WGS84SRID, nil // CRS84 is WGS84, just like EPSG:4326 (only axis order differs but SRID is the same)
-		}
-		val, err := strconv.Atoi(crsCode)
-		if err != nil {
-			return 0, fmt.Errorf("expected numerical CRS code, received: %s", crsCode)
-		}
-		srid = d.SRID(val)
-	}
-
 	return srid, nil
 }
 
