@@ -33,11 +33,11 @@ type Info struct {
 func GetAxisOrderForCRS(epsg string) (domain.AxisOrder, error) {
 	projJSON, err := ExecProjInfo(epsg)
 	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", srs, err)
+		return domain.AxisOrderXY, fmt.Errorf("get CRS information for %q: %w", epsg, err)
 	}
 	axisOrder, err := GetAxisOrder(projJSON)
 	if err != nil {
-		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", srs, err)
+		return domain.AxisOrderXY, fmt.Errorf("get axis order for %q: %w", epsg, err)
 	}
 	return axisOrder, nil
 }
