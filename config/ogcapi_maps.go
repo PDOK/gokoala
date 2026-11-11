@@ -84,6 +84,8 @@ type DefaultMap struct {
 	Bbox []string `yaml:"bbox" json:"bbox" validate:"required,len=4,dive,numeric"`
 
 	// Size of a rendering pixel in millimeters. Defaults to 0.28.
+	// OGC API Maps Display Resolution conformance requires 0.28 when
+	// mm-per-pixel is omitted. Overriding this default breaks that conformance.
 	// +optional
 	// +kubebuilder:default="0.28"
 	// +kubebuilder:validation:Pattern=`^\d*\.?\d+$`
