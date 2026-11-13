@@ -34,15 +34,27 @@ type MapRequest struct {
 }
 
 type MapViewParameters struct {
-	crs        domain.ContentCrs
-	bboxSRID   domain.SRID
-	bbox       *geom.Bounds
-	width      int
-	height     int
-	mmPerPixel float64
+	crs              domain.ContentCrs
+	bboxSRID         domain.SRID
+	bbox             *geom.Bounds
+	width            int
+	height           int
+	mmPerPixel       float64
+	scaleDenominator float64
 }
 
-func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
+// validateParamCombinations rejects unsupported param combinations
+// before defaults and calculated values are applied.
+func (request *MapRequest) validateParamCombinations() error {
+	requested := request.requested
+	if requested.scaleDenominator != 0 && (requested.width != 0 || requested.height != 0) {
+		return errors.New("scale-denominator cannot be combined with width or height")
+	}
+	return nil
+}
+
+// resolveValues applies defaults and resolves the bbox and dimensions in the output CRS.
+func (request *MapRequest) resolveValues(defaults config.DefaultMap) error {
 	resolved := request.requested
 	if resolved.crs == "" {
 		crs, err := getDefaultCrs(defaults)
@@ -95,9 +107,13 @@ func (request *MapRequest) setDefaults(defaults config.DefaultMap) error {
 // With both dimensions but no explicit bbox, it resizes the bbox preserving default center and vertical resolution.
 func resolveMapDimensions(resolved *MapViewParameters, requested MapViewParameters,
 	bbox *geom.Bounds, defaults config.DefaultMap) (*geom.Bounds, error) {
+	if requested.scaleDenominator != 0 {
+		err := resolveScaleDimensions(resolved, bbox)
+		return bbox, err
+	}
 	hasBbox := requested.bbox != nil
 	hasWidth, hasHeight := requested.width != 0, requested.height != 0
-	ratio, err := util.BboxAspectRatio(bbox)
+	ratio, err := bboxAspectRatio(bbox)
 	if err != nil {
 		return nil, err
 	}
@@ -106,15 +122,15 @@ func resolveMapDimensions(resolved *MapViewParameters, requested MapViewParamete
 		resolved.width, resolved.height = defaults.Width, defaults.Height
 	case !hasBbox && hasWidth && hasHeight:
 		resolutionY := (bbox.Max(1) - bbox.Min(1)) / float64(defaults.Height)
-		bbox, err = util.BboxAtResolution(bbox, resolved.width, resolved.height, resolutionY)
+		bbox, err = bboxAtResolution(bbox, resolved.width, resolved.height, resolutionY)
 	case !hasWidth || !hasHeight:
 		if !hasWidth && !hasHeight {
 			resolved.height = defaults.Height
 		}
-		resolved.width, resolved.height, err = util.CompleteDimensions(resolved.width, resolved.height, ratio)
+		resolved.width, resolved.height, err = completeDimensions(resolved.width, resolved.height, ratio)
 	}
 	if err != nil {
-		if errors.Is(err, util.ErrDimensionOverflow) {
+		if errors.Is(err, errDimensionOverflow) {
 			return nil, fmt.Errorf("%w: %w", ErrMapTooLarge, err)
 		}
 		return nil, err
@@ -135,7 +151,7 @@ func parseDefaultBbox(defaults config.DefaultMap) (*geom.Bounds, error) {
 		bbox[index] = value
 	}
 	bounds := geom.NewBounds(geom.XY).Set(bbox[:]...)
-	if _, err := util.BboxAspectRatio(bounds); err != nil {
+	if _, err := bboxAspectRatio(bounds); err != nil {
 		return nil, fmt.Errorf("invalid default bbox: %w", err)
 	}
 	return bounds, nil
@@ -213,11 +229,8 @@ func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS8
 	return bbox, nil
 }
 
-// validate checks resolved values after defaults have been applied.
-func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
-	// Place to do cross-field validation.
-	// I.e., if we want to support Scaling, we cannot have both 'bbox' and 'center' params in a single request
-
+// validateResolved checks resolved values after defaults have been applied.
+func (request *MapRequest) validateResolved(limits *config.OgcAPIMaps) error {
 	resolved := request.resolved
 	if _, err := toMapResolution(resolved.mmPerPixel); err != nil {
 		return err
@@ -226,7 +239,7 @@ func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
 	if resolved.width <= 0 || resolved.height <= 0 {
 		return errors.New("map dimensions must be positive")
 	}
-	if _, err := util.BboxAspectRatio(resolved.bbox); err != nil {
+	if _, err := bboxAspectRatio(resolved.bbox); err != nil {
 		return fmt.Errorf("invalid resolved bbox: %w", err)
 	}
 	_, bboxSRID, err := parseCrs(string(resolved.crs))
@@ -251,4 +264,24 @@ func (request *MapRequest) validate(limits *config.OgcAPIMaps) error {
 		return fmt.Errorf("%w: %w", ErrMapTooLarge, err)
 	}
 	return nil
+}
+
+// resolveScaleDimensions calculates image dimensions for the resolved bbox and requested scale.
+func resolveScaleDimensions(resolved *MapViewParameters, bbox *geom.Bounds) error {
+	if _, err := toMapResolution(resolved.mmPerPixel); err != nil {
+		return err
+	}
+	_, srid, err := parseCrs(string(resolved.crs))
+	if err != nil {
+		return err
+	}
+	srs := fmt.Sprintf("EPSG:%d", srid)
+	if srid == domain.WGS84SRID {
+		srs = crs84SRS
+	}
+	resolved.width, resolved.height, err = dimensionsAtScale(bbox, srs, resolved.scaleDenominator, resolved.mmPerPixel)
+	if errors.Is(err, errDimensionOverflow) {
+		return fmt.Errorf("%w: %w", ErrMapTooLarge, err)
+	}
+	return err
 }

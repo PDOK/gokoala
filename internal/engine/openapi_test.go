@@ -300,6 +300,15 @@ func Test_newOpenAPI(t *testing.T) {
 					response := item.Get.Responses.Status(413)
 					require.NotNil(t, response)
 					require.NotNil(t, response.Value.Content["application/problem+json"])
+					for _, name := range []string{"scale-denominator", "mm-per-pixel"} {
+						var found bool
+						for _, parameter := range item.Get.Parameters {
+							if parameter.Value != nil && parameter.Value.Name == name {
+								found = true
+							}
+						}
+						require.True(t, found, "%s missing from %s", name, item.Get.OperationID)
+					}
 				}
 			}
 

@@ -43,6 +43,8 @@
 					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/scale-denominator"},
+					{"$ref": "#/components/parameters/mm-per-pixel"},
 					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/f-map"}
 				],
@@ -71,6 +73,8 @@
 					{"$ref": "#/components/parameters/bbox-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/scale-denominator"},
+					{"$ref": "#/components/parameters/mm-per-pixel"},
 					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/styleId-collection"},
 					{"$ref": "#/components/parameters/f-map"}
@@ -134,16 +138,30 @@
 			"width": {
 				"name": "width",
 				"in": "query",
-				"description": "Width of the map in pixels. Missing dimensions are calculated from the bbox aspect ratio in the output CRS. If a bbox but neither dimension is supplied, the default height anchors the calculated width. If bbox and both dimensions are omitted, the configured default view is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
+				"description": "Width of the map in pixels. Cannot be combined with scale-denominator. Missing dimensions are calculated from the bbox aspect ratio in the output CRS. If a bbox but neither dimension is supplied, the default height anchors the calculated width. If bbox and both dimensions are omitted, the configured default view is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,
 				"schema": {"type": "integer", "minimum": 1, "maximum": {{ .Config.OgcAPI.Maps.MaxWidth }}, "default": {{ .Config.OgcAPI.Maps.DefaultMap.Width }}}
 			},
+			"scale-denominator": {
+				"name": "scale-denominator",
+				"in": "query",
+				"description": "Positive scale denominator used with the display resolution to calculate image dimensions for the requested or default bbox. Physical scale is estimated locally at the center of the output bbox; accuracy may vary for large extents. Cannot be combined with width or height. Calculated dimensions exceeding map limits or resolutions underflowing to zero return HTTP 413. Resolutions overflowing the supported numeric range return HTTP 400.",
+				"required": false,
+				"schema": {"type": "number", "exclusiveMinimum": true, "minimum": 0}
+			},
+			"mm-per-pixel": {
+				"name": "mm-per-pixel",
+				"in": "query",
+				"description": "Display pixel size in millimetres. Used with scale-denominator to calculate image dimensions. Defaults to the configured value.",
+				"required": false,
+				"schema": {"type": "number", "exclusiveMinimum": true, "minimum": 0}
+			},
 			"height": {
 				"name": "height",
 				"in": "query",
-				"description": "Height of the map in pixels. If omitted with width supplied, calculated from the bbox aspect ratio in the output CRS. When both dimensions but no bbox are supplied, a bbox is calculated preserving the default center and vertical resolution. Explicit bbox and both dimensions are preserved. Values exceeding maxHeight or maxPixels return HTTP 413.",
+				"description": "Height of the map in pixels. Cannot be combined with scale-denominator. If omitted with width supplied, calculated from the bbox aspect ratio in the output CRS. When both dimensions but no bbox are supplied, a bbox is calculated preserving the default center and vertical resolution. Explicit bbox and both dimensions are preserved. Values exceeding maxHeight or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,

@@ -24,6 +24,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/twpayne/go-geom"
 	"golang.org/x/text/language"
 )
 
@@ -425,6 +426,21 @@ func TestMapParamsHTTP(t *testing.T) {
 		{name: "none", query: "", wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "width only", query: "width=800", wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "height only", query: "height=600", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "default bbox with scale", query: "scale-denominator=1000000", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "scale subpixel dimensions", query: "scale-denominator=1e300", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "scale with bbox", query: "bbox=" + bboxRD + "&bbox-crs=" + rd28992URI + "&scale-denominator=100000",
+			wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "scale with width", query: "scale-denominator=1000&width=1", wantStatus: http.StatusBadRequest},
+		{name: "scale with height and bbox", query: "bbox=" + bboxRD + "&scale-denominator=1000&height=1", wantStatus: http.StatusBadRequest},
+		{name: "invalid scale zero", query: "scale-denominator=0", wantStatus: http.StatusBadRequest},
+		{name: "invalid scale negative", query: "scale-denominator=-1", wantStatus: http.StatusBadRequest},
+		{name: "invalid scale infinity", query: "scale-denominator=Inf", wantStatus: http.StatusBadRequest},
+		{name: "scale resolution underflow", query: "scale-denominator=1e-320", wantStatus: http.StatusRequestEntityTooLarge},
+		{name: "scale resolution overflow", query: "scale-denominator=1e308&mm-per-pixel=1000000", wantStatus: http.StatusBadRequest},
+		{name: "empty width", query: "width=", wantStatus: http.StatusBadRequest},
+		{name: "empty height", query: "height=", wantStatus: http.StatusBadRequest},
+		{name: "calculated scale dimensions exceed limits", query: "scale-denominator=1", wantStatus: http.StatusRequestEntityTooLarge},
+		{name: "calculated scale dimension overflows", query: "scale-denominator=1e-300", wantStatus: http.StatusRequestEntityTooLarge},
 		{name: "crs only", query: "crs=" + rd28992URI, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox only", query: "bbox=" + bboxCRS84, wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "bbox-crs only without bbox is ignored", query: "bbox-crs=" + domain.WGS84CrsURI,
@@ -542,6 +558,63 @@ func TestMapLimitsHTTP(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestMapScaleWMSRequest(t *testing.T) {
+	for _, mapPath := range []string{
+		"/collections/" + testCollection + "/map",
+		"/collections/" + testCollection + "/styles/" + testStyle + "/map",
+	} {
+		t.Run(mapPath, func(t *testing.T) {
+			captured := make(chan url.Values, 1)
+			wms := newMockWMS(t, func(r *http.Request) { captured <- r.URL.Query() })
+			router := newTestRouter(t, wms.URL, nil)
+			query := "bbox=154500,462500,155500,463500&bbox-crs=" + rd28992URI +
+				"&scale-denominator=10000&mm-per-pixel=0.28"
+			rr := doGet(router, mapPath+"?"+query, "image/png")
+			require.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
+			params := <-captured
+			require.Equal(t, "EPSG:28992", params.Get("CRS"))
+			require.Equal(t, [4]float64{154500, 462500, 155500, 463500}, parseContentBbox(t, params.Get("BBOX")))
+			require.Equal(t, params.Get("BBOX"), rr.Header().Get(engine.HeaderContentBbox))
+			require.Equal(t, "357", params.Get("WIDTH"))
+			require.Equal(t, "357", params.Get("HEIGHT"))
+		})
+	}
+	t.Run("geographic output native axis order", func(t *testing.T) {
+		captured := make(chan url.Values, 1)
+		wms := newMockWMS(t, func(r *http.Request) { captured <- r.URL.Query() })
+		router := newTestRouter(t, wms.URL, nil)
+		query := "bbox=59.5,4,60.5,5&bbox-crs=" + crsEPSG4326URI + "&crs=" + crsEPSG4326URI +
+			"&scale-denominator=100000&mm-per-pixel=0.28"
+		rr := doGet(router, "/collections/"+testCollection+"/map?"+query, "image/png")
+		require.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
+		params := <-captured
+		require.Equal(t, "EPSG:4326", params.Get("CRS"))
+		require.Equal(t, [4]float64{59.5, 4, 60.5, 5}, parseContentBbox(t, params.Get("BBOX")))
+		width, err := strconv.Atoi(params.Get("WIDTH"))
+		require.NoError(t, err)
+		height, err := strconv.Atoi(params.Get("HEIGHT"))
+		require.NoError(t, err)
+		require.InDelta(t, 1993, width, 5)
+		require.InDelta(t, 3979, height, 5)
+	})
+	t.Run("rounded dimensions at configured limit", func(t *testing.T) {
+		bbox := geom.NewBounds(geom.XY).Set(154500, 462500, 155500, 463500)
+		width, height, err := physicalBboxDimensions(bbox, "EPSG:28992")
+		require.NoError(t, err)
+		router := newTestRouter(t, newMockWMS(t).URL, nil)
+		for _, tt := range []struct {
+			pixels float64
+			status int
+		}{{4000.4, http.StatusOK}, {4000.6, http.StatusRequestEntityTooLarge}} {
+			scale := math.Max(width, height) / (tt.pixels * 0.00028)
+			query := "bbox=154500,462500,155500,463500&bbox-crs=" + rd28992URI +
+				"&scale-denominator=" + strconv.FormatFloat(scale, 'g', -1, 64)
+			rr := doGet(router, "/collections/"+testCollection+"/map?"+query, "image/png")
+			require.Equal(t, tt.status, rr.Code, rr.Body.String())
+		}
+	})
 }
 
 func TestMapViewportHTTP(t *testing.T) {

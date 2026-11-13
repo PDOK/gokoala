@@ -16,13 +16,14 @@ import (
 )
 
 const (
-	CrsParam     = "crs"
-	BboxParam    = "bbox"
-	BboxCrsParam = "bbox-crs"
-	WidthParam   = "width"
-	HeightParam  = "height"
-	Transparent  = "transparent"
-	MMPerPixel   = "mm-per-pixel"
+	CrsParam         = "crs"
+	BboxParam        = "bbox"
+	BboxCrsParam     = "bbox-crs"
+	WidthParam       = "width"
+	HeightParam      = "height"
+	Transparent      = "transparent"
+	MMPerPixel       = "mm-per-pixel"
+	ScaleDenominator = "scale-denominator"
 )
 
 var mapsKnownParams = map[string]struct{}{
@@ -34,6 +35,7 @@ var mapsKnownParams = map[string]struct{}{
 	HeightParam:        {},
 	Transparent:        {},
 	MMPerPixel:         {},
+	ScaleDenominator:   {},
 }
 
 type mapsURL struct {
@@ -41,6 +43,7 @@ type mapsURL struct {
 	params  url.Values
 }
 
+// parse parses and validates individual parameters
 func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 	err := m.validateNoUnknownParams()
 	if err != nil {
@@ -56,14 +59,14 @@ func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
 	mmPerPixel, mmPerPixelErr := parseMMPerPixel(m.params)
+	scale, scaleErr := parseScaleDenominator(m.params)
 
-	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr); err != nil {
+	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr, scaleErr); err != nil {
 		return MapRequest{}, err
 	}
-
 	request := MapRequest{
 		transparent: transparent,
-		requested:   MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, mmPerPixel: mmPerPixel},
+		requested:   MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, mmPerPixel: mmPerPixel, scaleDenominator: scale},
 	}
 
 	return request, nil
@@ -167,7 +170,6 @@ func parseCrsParam(params url.Values, name string) (domain.ContentCrs, error) {
 
 func parseCrs(identifier string) (domain.ContentCrs, domain.SRID, error) {
 	identifier = strings.TrimSpace(identifier)
-	
 	// Handle Safe CURIE
 	if domain.HasSafeCURIESyntax(identifier) {
 		srid, err := domain.ParseSafeCURIEToSRID(identifier)
@@ -214,4 +216,16 @@ func parseMMPerPixel(params url.Values) (float64, error) {
 	}
 
 	return mmPerPixelParam, nil
+}
+
+func parseScaleDenominator(params url.Values) (float64, error) {
+	if !params.Has(ScaleDenominator) {
+		return 0, nil
+	}
+	value := strings.TrimSpace(params.Get(ScaleDenominator))
+	scale, err := strconv.ParseFloat(value, 64)
+	if err != nil || math.IsNaN(scale) || math.IsInf(scale, 0) || scale <= 0 {
+		return 0, fmt.Errorf("scale-denominator must be a finite positive number: %q", value)
+	}
+	return scale, nil
 }
