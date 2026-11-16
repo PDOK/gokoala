@@ -159,7 +159,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 			return nil, nil
 		}
 		fidColumn = pg.FidColumn
-		fidTypeCast = "::bigint" // always compare as 64-bits integer, regardless of numeric type in schema
+		fidTypeCast = "::bigint" // always compare param (not column) as 64-bits integer, regardless of numeric type in schema.
 	case uuid.UUID:
 		if pg.ExternalFidColumn == "" {
 			// Features should be retrieved by int64
@@ -181,7 +181,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		srid = d.WGS84SRIDPostgis
 	}
 
-	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s"%[4]s = @fid%[4]s limit 1`,
+	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s" = @fid%[4]s limit 1`,
 		selectClause, table.Name, fidColumn, fidTypeCast)
 	rows, err := pg.db.Query(queryCtx, query, pgx.NamedArgs{"fid": featureID, "outputSrid": srid})
 	if err != nil {
