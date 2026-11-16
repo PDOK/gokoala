@@ -64,7 +64,7 @@ func readFeatureTables(collections config.FeaturesCollections, db *pgxpool.Pool,
 
 	query := `
 select
-	f_table_name::text, '%s', f_geometry_column::text, type::text
+	f_table_name::text, '%s', f_geometry_column::text, type::text, srid
 from
 	geometry_columns
 where
@@ -83,7 +83,7 @@ where
 	result := make(map[string]*common.Table, 10)
 	for rows.Next() {
 		table := common.Table{}
-		if err = rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType); err != nil {
+		if err = rows.Scan(&table.Name, &table.Type, &table.GeometryColumnName, &table.GeometryType, &table.GeometryColumnSRID); err != nil {
 			return nil, fmt.Errorf("failed to read geometry_columns record, error: %w", err)
 		}
 		if table.Name == "" {
@@ -117,6 +117,23 @@ where
 	common.ValidateUniqueness(result)
 
 	return result, nil
+}
+
+// Read search index (used for features search) from "geometry_columns" view.
+func readSearchIndex(db *pgxpool.Pool, indexName, schemaName string) (*common.Table, error) {
+	table := common.Table{Name: indexName, GeometryColumnName: searchGeomColumn}
+	err := db.QueryRow(context.Background(), `
+select
+	srid
+from
+	geometry_columns
+where
+	f_table_schema = $1 and f_table_name = $2 and f_geometry_column = $3`,
+		schemaName, indexName, searchGeomColumn).Scan(&table.GeometryColumnSRID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read search index '%s' from geometry_columns, error: %w", indexName, err)
+	}
+	return &table, nil
 }
 
 func readQueryables(featTableByCollection map[string]*common.Table,
