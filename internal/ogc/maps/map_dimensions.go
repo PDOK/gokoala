@@ -149,20 +149,16 @@ func physicalAxisScale(crs84Transform, crs84 *proj.PJ, bbox *geom.Bounds, center
 	}
 	coordinates := [2][2]float64{center, center}
 	coordinates[0][axis], coordinates[1][axis] = lower, upper
-	var points [2]proj.Coord
-	for i := range points {
-		coordinate := coordinates[i]
-		point, err := crs84Transform.Forward(proj.NewCoord(coordinate[0], coordinate[1], 0, 0))
-		if err != nil {
-			return 0, fmt.Errorf("transform bbox center sample: %w", err)
-		}
-		if !finite(point.X()) || !finite(point.Y()) || math.Abs(point.Y()) > 90 {
-			return 0, errors.New("invalid geographic coordinate at bbox center")
-		}
-		// PROJ's geodesic distance function expects longitude/latitude in radians.
-		points[i] = point.DegToRad()
+	lowerPoint, err := transformToCRS84Radians(crs84Transform, coordinates[0])
+	if err != nil {
+		return 0, err
 	}
-	distance := crs84.LPDist(points[0], points[1])
+	upperPoint, err := transformToCRS84Radians(crs84Transform, coordinates[1])
+	if err != nil {
+		return 0, err
+	}
+	// PROJ's geodesic distance function expects longitude/latitude in radians.
+	distance := crs84.LPDist(lowerPoint, upperPoint)
 	if !finite(distance) || distance <= 0 || upper <= lower {
 		return 0, errors.New("cannot determine physical scale at bbox center")
 	}
@@ -171,6 +167,18 @@ func physicalAxisScale(crs84Transform, crs84 *proj.PJ, bbox *geom.Bounds, center
 		return 0, errors.New("invalid physical scale at bbox center")
 	}
 	return factor, nil
+}
+
+// transformToCRS84Radians transforms a coordinate to CRS84 longitude and latitude in radians.
+func transformToCRS84Radians(crs84Transform *proj.PJ, coordinate [2]float64) (proj.Coord, error) {
+	point, err := crs84Transform.Forward(proj.NewCoord(coordinate[0], coordinate[1], 0, 0))
+	if err != nil {
+		return proj.Coord{}, fmt.Errorf("transform coordinate to CRS84: %w", err)
+	}
+	if !finite(point.X()) || !finite(point.Y()) || math.Abs(point.Y()) > 90 {
+		return proj.Coord{}, errors.New("invalid geographic coordinate in CRS84")
+	}
+	return point.DegToRad(), nil
 }
 
 // bboxAtScale estimates an output CRS bbox from a center and image dimensions.
