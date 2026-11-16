@@ -53,7 +53,12 @@ func (m *Maps) Maps() http.HandlerFunc {
 		request.collection = collectionID
 		request.style = styleID
 
-		if err = request.setDefaults(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
+		if err = request.validateParamCombinations(); err != nil {
+			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
+			return
+		}
+
+		if err = request.resolveValues(m.engine.Config.OgcAPI.Maps.DefaultMap); err != nil {
 			switch {
 			case errors.Is(err, ErrMapTooLarge):
 				engine.RenderProblem(engine.ProblemRequestEntityTooLarge, w, err.Error())
@@ -63,7 +68,7 @@ func (m *Maps) Maps() http.HandlerFunc {
 			return
 		}
 
-		if err = request.validate(m.engine.Config.OgcAPI.Maps); err != nil {
+		if err = request.validateResolved(m.engine.Config.OgcAPI.Maps); err != nil {
 			kind := engine.ProblemBadRequest
 			if errors.Is(err, ErrMapTooLarge) {
 				kind = engine.ProblemRequestEntityTooLarge

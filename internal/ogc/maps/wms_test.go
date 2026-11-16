@@ -169,7 +169,7 @@ func TestBuildGetMapRequest(t *testing.T) {
 			if tt.change != nil {
 				tt.change(&request)
 			}
-			require.NoError(t, request.setDefaults(mapsConfig.DefaultMap))
+			require.NoError(t, request.resolveValues(mapsConfig.DefaultMap))
 			if tt.changeResolved != nil {
 				tt.changeResolved(&request)
 			}

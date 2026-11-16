@@ -63,18 +63,37 @@ func TestMapRequestResolutionPreservesRequested(t *testing.T) {
 				b := tt.requested.bbox
 				originalBBox = geom.NewBounds(geom.XY).Set(b.Min(0), b.Min(1), b.Max(0), b.Max(1))
 			}
-			require.NoError(t, request.setDefaults(defaults))
+			require.NoError(t, request.resolveValues(defaults))
 			require.Equal(t, tt.requested, request.requested)
 			require.Equal(t, originalBBox, request.requested.bbox)
 			require.Equal(t, tt.want, request.resolved)
 			if originalBBox != nil {
 				require.NotSame(t, request.requested.bbox, request.resolved.bbox)
 			}
-			require.NoError(t, request.setDefaults(defaults))
+			require.NoError(t, request.resolveValues(defaults))
 			require.Equal(t, tt.want, request.resolved, "repeated resolution must start from requested values")
 			request.requested.mmPerPixel = 0.127
-			require.NoError(t, request.setDefaults(defaults))
+			require.NoError(t, request.resolveValues(defaults))
 			require.InDelta(t, 0.127, request.resolved.mmPerPixel, 1e-9)
 		})
 	}
+}
+
+func TestDimensionsAtScale(t *testing.T) {
+	bbox := geom.NewBounds(geom.XY).Set(154500, 462500, 155500, 463500)
+	for _, tt := range []struct {
+		scale, mmPerPixel float64
+		want              int
+	}{
+		{10000, 0.28, 357},
+		{10000, 0.56, 179},
+		{1e300, 0.28, 1},
+	} {
+		width, height, err := dimensionsAtScale(bbox, "EPSG:28992", tt.scale, tt.mmPerPixel)
+		require.NoError(t, err)
+		require.Equal(t, tt.want, width)
+		require.Equal(t, tt.want, height)
+	}
+	_, _, err := dimensionsAtScale(bbox, "EPSG:28992", 1e-300, 0.28)
+	require.ErrorIs(t, err, errDimensionOverflow)
 }

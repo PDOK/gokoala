@@ -16,13 +16,16 @@ import (
 )
 
 const (
-	CrsParam     = "crs"
-	BboxParam    = "bbox"
-	BboxCrsParam = "bbox-crs"
-	WidthParam   = "width"
-	HeightParam  = "height"
-	Transparent  = "transparent"
-	MMPerPixel   = "mm-per-pixel"
+	CrsParam         = "crs"
+	BboxParam        = "bbox"
+	BboxCrsParam     = "bbox-crs"
+	CenterParam      = "center"
+	CenterCrsParam   = "center-crs"
+	WidthParam       = "width"
+	HeightParam      = "height"
+	Transparent      = "transparent"
+	MMPerPixel       = "mm-per-pixel"
+	ScaleDenominator = "scale-denominator"
 )
 
 var mapsKnownParams = map[string]struct{}{
@@ -30,10 +33,13 @@ var mapsKnownParams = map[string]struct{}{
 	CrsParam:           {},
 	BboxParam:          {},
 	BboxCrsParam:       {},
+	CenterParam:        {},
+	CenterCrsParam:     {},
 	WidthParam:         {},
 	HeightParam:        {},
 	Transparent:        {},
 	MMPerPixel:         {},
+	ScaleDenominator:   {},
 }
 
 type mapsURL struct {
@@ -41,6 +47,7 @@ type mapsURL struct {
 	params  url.Values
 }
 
+// parse parses and validates individual parameters
 func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 	err := m.validateNoUnknownParams()
 	if err != nil {
@@ -52,21 +59,50 @@ func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 		crsErr = validateSupportedCrs(CrsParam, crs, supportedCrs)
 	}
 	bbox, bboxSRID, bboxErr := parseBbox(m.params)
+	center, centerSRID, centerErr := parseCenter(m.params)
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
 	mmPerPixel, mmPerPixelErr := parseMMPerPixel(m.params)
+	scale, scaleErr := parseScaleDenominator(m.params)
 
-	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr); err != nil {
+	if err = errors.Join(err, crsErr, bboxErr, centerErr, widthErr, heightErr, transparentErr, mmPerPixelErr, scaleErr); err != nil {
 		return MapRequest{}, err
 	}
-
 	request := MapRequest{
 		transparent: transparent,
-		requested:   MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, mmPerPixel: mmPerPixel},
+		requested: MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, center: center, centerSRID: centerSRID,
+			width: width, height: height, mmPerPixel: mmPerPixel, scaleDenominator: scale},
 	}
 
 	return request, nil
+}
+
+func parseCenter(params url.Values) (geom.Coord, domain.SRID, error) {
+	if !params.Has(CenterParam) {
+		return nil, domain.UndefinedSRID, nil
+	}
+	parts := strings.Split(params.Get(CenterParam), ",")
+	if len(parts) != 2 {
+		return nil, domain.UndefinedSRID, errors.New("center must contain two coordinates")
+	}
+	center := make(geom.Coord, 2)
+	for i, part := range parts {
+		value, err := strconv.ParseFloat(strings.TrimSpace(part), 64)
+		if err != nil || !finite(value) {
+			return nil, domain.UndefinedSRID, errors.New("center coordinates must be finite numbers")
+		}
+		center[i] = value
+	}
+	crs, err := parseCrsParam(params, CenterCrsParam)
+	if err != nil {
+		return nil, domain.UndefinedSRID, err
+	}
+	if crs == "" {
+		return center, domain.WGS84SRID, nil
+	}
+	_, srid, err := parseCrs(string(crs))
+	return center, srid, err
 }
 
 func validateSupportedCrs(param string, crs domain.ContentCrs, supportedCrs []domain.ContentCrs) error {
@@ -167,7 +203,6 @@ func parseCrsParam(params url.Values, name string) (domain.ContentCrs, error) {
 
 func parseCrs(identifier string) (domain.ContentCrs, domain.SRID, error) {
 	identifier = strings.TrimSpace(identifier)
-	
 	// Handle Safe CURIE
 	if domain.HasSafeCURIESyntax(identifier) {
 		srid, err := domain.ParseSafeCURIEToSRID(identifier)
@@ -214,4 +249,16 @@ func parseMMPerPixel(params url.Values) (float64, error) {
 	}
 
 	return mmPerPixelParam, nil
+}
+
+func parseScaleDenominator(params url.Values) (float64, error) {
+	if !params.Has(ScaleDenominator) {
+		return 0, nil
+	}
+	value := strings.TrimSpace(params.Get(ScaleDenominator))
+	scale, err := strconv.ParseFloat(value, 64)
+	if err != nil || math.IsNaN(scale) || math.IsInf(scale, 0) || scale <= 0 {
+		return 0, fmt.Errorf("scale-denominator must be a finite positive number: %q", value)
+	}
+	return scale, nil
 }

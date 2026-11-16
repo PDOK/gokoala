@@ -14,7 +14,7 @@ func TransformPoint(point geom.Coord, inputSRS, outputSRS string) (geom.Coord, e
 	if len(point) != 2 {
 		return nil, errors.New("point must contain exactly two coordinates")
 	}
-	transformation, err := newTransformation(inputSRS, outputSRS)
+	transformation, err := NewTransformation(inputSRS, outputSRS)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func TransformBoundingBox(bbox *geom.Bounds, inputSRS, outputSRS string) (*geom.
 	if bbox == nil || bbox.Layout() != geom.XY || bbox.IsEmpty() {
 		return nil, errors.New("bbox must contain non-empty XY bounds")
 	}
-	transformation, err := newTransformation(inputSRS, outputSRS)
+	transformation, err := NewTransformation(inputSRS, outputSRS)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,8 @@ func TransformBoundingBox(bbox *geom.Bounds, inputSRS, outputSRS string) (*geom.
 	), nil
 }
 
-func newTransformation(inputSRS, outputSRS string) (*proj.PJ, error) {
+// NewTransformation creates a transformation using longitude/latitude or easting/northing order.
+func NewTransformation(inputSRS, outputSRS string) (*proj.PJ, error) {
 	transformation, err := proj.NewCRSToCRS(inputSRS, outputSRS, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create transformation from %q to %q: %w", inputSRS, outputSRS, err)

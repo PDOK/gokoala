@@ -56,6 +56,22 @@ func EpsgToSrid(srs string) (SRID, error) {
 	return SRID(srid), nil
 }
 
+// SridToEpsg formats an EPSG-backed SRID as an EPSG identifier.
+func SridToEpsg(srid SRID) (string, error) {
+	if srid <= 0 || srid == WGS84SRID {
+		return "", fmt.Errorf("SRID %d is not an EPSG identifier", srid)
+	}
+	return fmt.Sprintf("%s%d", EPSGPrefix, srid), nil
+}
+
+// SridToSrs formats an SRID as an EPSG or OGC CRS84 identifier.
+func SridToSrs(srid SRID) (string, error) {
+	if srid == WGS84SRID {
+		return OGCPrefix + WGS84CodeOGC, nil
+	}
+	return SridToEpsg(srid)
+}
+
 // ParseCrsURIToSRID parses an HTTP OGC CRS identifier.
 func ParseCrsURIToSRID(identifier string) (SRID, error) {
 	identifier = strings.TrimSpace(identifier)
