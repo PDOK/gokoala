@@ -24,8 +24,10 @@ availableLanguages:
 ogcApi:
   maps:
     basemap: BRT
-    # base URL of the MapServer WMS service
-    wmsServer: https://service.pdok.nl/kadaster/brk-bestuurlijke-gebieden/wms/v1_0
+    backend:
+      type: externalWms
+      externalWms:
+        url: https://service.pdok.nl/kadaster/brk-bestuurlijke-gebieden/wms/v1_0
     # global image limits in pixels (both default to 4000)
     maxWidth: 4000
     maxHeight: 4000
@@ -55,13 +57,13 @@ ogcApi:
         bbox: ["-25000", "250000", "280000", "860000"]
         layers:
           - id: gemeentegebied
-            # layer name as advertised by the WMS service
+            # layer name as advertised by the backend service
             name: Gemeentegebied
             title: Gemeentegebied
             styles:
               - id: default
-                # style name as advertised by the WMS service
-                wmsStyle: Gemeentegebied
+                # style name as advertised by the backend service
+                styleName: Gemeentegebied
       - id: provinciegebied
         metadata:
           title: Provinciegebied
@@ -81,13 +83,13 @@ ogcApi:
         bbox: ["-25000", "250000", "280000", "860000"]
         layers:
           - id: provinciegebied
-            # layer name as advertised by the WMS service
+            # layer name as advertised by the backend service
             name: Provinciegebied
             title: Provinciegebied
             styles:
               - id: default
-                # style name as advertised by the WMS service
-                wmsStyle: Provinciegebied
+                # style name as advertised by the backend service
+                styleName: Provinciegebied
       - id: landgebied
         metadata:
           title: Landgebied
@@ -107,10 +109,10 @@ ogcApi:
         bbox: ["-25000", "250000", "280000", "860000"]
         layers:
           - id: landgebied
-            # layer name as advertised by the WMS service
+            # layer name as advertised by the backend service
             name: Landgebied
             title: Landgebied
             styles:
               - id: default
-                # style name as advertised by the WMS service
-                wmsStyle: Landgebied
+                # style name as advertised by the backend service
+                styleName: Landgebied

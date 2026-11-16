@@ -139,7 +139,10 @@ ogcApi:
 
   maps:
     basemap: BRT
-    wmsServer: https://example.com/wms
+    backend:
+      type: externalWms
+      externalWms:
+        url: https://example.com/wms
     defaultMap:
       crs: EPSG:28992
       width: 1024

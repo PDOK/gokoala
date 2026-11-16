@@ -16,8 +16,8 @@ type OgcAPIMaps struct {
 	// +optional
 	Basemap string `yaml:"basemap,omitempty" json:"basemap,omitempty" default:"OSM" validate:"oneof=OSM BRT"`
 
-	// Base URL of the MapServer WMS service.
-	WMSServer *URL `yaml:"wmsServer" json:"wmsServer" validate:"required"`
+	// Backend used to render maps.
+	Backend *MapsBackend `yaml:"backend" json:"backend" validate:"required"`
 
 	// Maximum map width in pixels.
 	// +optional
@@ -36,6 +36,23 @@ type OgcAPIMaps struct {
 
 	// Collections to be served as maps through this API.
 	Collections MapsCollections `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
+}
+
+// +kubebuilder:object:generate=true
+// +kubebuilder:validation:XValidation:rule="self.type == 'externalWms' && has(self.externalWms)",message="externalWms configuration is required when type is externalWms"
+type MapsBackend struct {
+	// Type of backend used to render maps.
+	// +kubebuilder:validation:Enum=externalWms
+	Type string `yaml:"type" json:"type" validate:"required,oneof=externalWms"`
+
+	// Configuration for an external WMS backend.
+	ExternalWMS *ExternalWMSBackend `yaml:"externalWms,omitempty" json:"externalWms,omitempty" validate:"required"`
+}
+
+// +kubebuilder:object:generate=true
+type ExternalWMSBackend struct {
+	// Base URL of the external WMS service.
+	URL *URL `yaml:"url" json:"url" validate:"required"`
 }
 
 type MapsCollections []MapsCollection
@@ -106,7 +123,7 @@ type MapsCollection struct { //nolint:recvcheck
 	// +optional
 	Links *CollectionLinks `yaml:"links,omitempty" json:"links,omitempty"`
 
-	// WMS layers included in this collection.
+	// Layers included in this collection.
 	// +kubebuilder:validation:MinItems=1
 	Layers []MapLayer `yaml:"layers" json:"layers" validate:"required,min=1,dive"`
 
@@ -164,14 +181,14 @@ type MapLayer struct {
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" json:"id" validate:"required,lowercase_id"`
 
-	// Layer name advertised by the WMS service.
+	// Layer name advertised by the backend service.
 	Name string `yaml:"name" json:"name" validate:"required"`
 
 	// Human-friendly title of the layer.
 	// +optional
 	Title string `yaml:"title,omitempty" json:"title,omitempty"`
 
-	// Styles advertised by the WMS service for this layer.
+	// Styles advertised by the backend service for this layer.
 	// +optional
 	Styles []MapStyle `yaml:"styles,omitempty" json:"styles,omitempty" validate:"dive"`
 }
@@ -182,8 +199,8 @@ type MapStyle struct {
 	// +kubebuilder:validation:Pattern=`^[a-z0-9"]([a-z0-9_-]*[a-z0-9"]+|)$`
 	ID string `yaml:"id" json:"id" validate:"required,lowercase_id"`
 
-	// Style name advertised by the WMS service.
-	WMSStyle string `yaml:"wmsStyle" json:"wmsStyle" validate:"required"`
+	// Style name advertised by the backend service.
+	StyleName string `yaml:"styleName" json:"styleName" validate:"required"`
 }
 
 func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
