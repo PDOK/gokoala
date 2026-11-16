@@ -50,6 +50,40 @@ func TestEpsgToSrid(t *testing.T) {
 	}
 }
 
+func TestSridToSrs(t *testing.T) {
+	for _, tt := range []struct {
+		name        string
+		srid        SRID
+		wantSrs     string
+		wantEpsg    string
+		wantSrsErr  bool
+		wantEpsgErr bool
+	}{
+		{name: "RD", srid: 28992, wantSrs: "EPSG:28992", wantEpsg: "EPSG:28992"},
+		{name: "EPSG4326", srid: 4326, wantSrs: "EPSG:4326", wantEpsg: "EPSG:4326"},
+		{name: "CRS84", srid: WGS84SRID, wantSrs: "OGC:CRS84", wantEpsgErr: true},
+		{name: "undefined", srid: UndefinedSRID, wantSrsErr: true, wantEpsgErr: true},
+		{name: "negative", srid: -1, wantSrsErr: true, wantEpsgErr: true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			srs, err := SridToSrs(tt.srid)
+			if tt.wantSrsErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, tt.wantSrs, srs)
+			epsg, err := SridToEpsg(tt.srid)
+			if tt.wantEpsgErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			assert.Equal(t, tt.wantEpsg, epsg)
+		})
+	}
+}
+
 func TestParseCrsURIToSRID(t *testing.T) {
 	tests := []struct {
 		name       string

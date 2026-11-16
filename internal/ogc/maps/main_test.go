@@ -432,13 +432,23 @@ func TestMapParamsHTTP(t *testing.T) {
 			wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "scale with width", query: "scale-denominator=1000&width=1", wantStatus: http.StatusBadRequest},
 		{name: "scale with height and bbox", query: "bbox=" + bboxRD + "&scale-denominator=1000&height=1", wantStatus: http.StatusBadRequest},
+		{name: "center needs scale", query: "center=5,52", wantStatus: http.StatusBadRequest},
+		{name: "center conflicts with bbox", query: "center=5,52&bbox=" + bboxCRS84 + "&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "center with empty bbox", query: "center=5,52&bbox=&scale-denominator=10000", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "center conflicts with width", query: "center=5,52&scale-denominator=10000&width=800", wantStatus: http.StatusBadRequest},
+		{name: "invalid center", query: "center=5,NaN&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "empty center", query: "center=&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "invalid center crs", query: "center=5,52&center-crs=foo&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "CRS84 latitude outside the usual range", query: "center=5,100&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "center crs unknown", query: "center=5,52&center-crs=" + crsUnknownURI + "&scale-denominator=10000", wantStatus: http.StatusBadRequest},
+		{name: "center crs ignored without center", query: "center-crs=invalid", wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "invalid scale zero", query: "scale-denominator=0", wantStatus: http.StatusBadRequest},
 		{name: "invalid scale negative", query: "scale-denominator=-1", wantStatus: http.StatusBadRequest},
 		{name: "invalid scale infinity", query: "scale-denominator=Inf", wantStatus: http.StatusBadRequest},
 		{name: "scale resolution underflow", query: "scale-denominator=1e-320", wantStatus: http.StatusRequestEntityTooLarge},
 		{name: "scale resolution overflow", query: "scale-denominator=1e308&mm-per-pixel=1000000", wantStatus: http.StatusBadRequest},
-		{name: "empty width", query: "width=", wantStatus: http.StatusBadRequest},
-		{name: "empty height", query: "height=", wantStatus: http.StatusBadRequest},
+		{name: "empty width", query: "width=", wantStatus: http.StatusOK, wantContentCrs: rd},
+		{name: "empty height", query: "height=", wantStatus: http.StatusOK, wantContentCrs: rd},
 		{name: "calculated scale dimensions exceed limits", query: "scale-denominator=1", wantStatus: http.StatusRequestEntityTooLarge},
 		{name: "calculated scale dimension overflows", query: "scale-denominator=1e-300", wantStatus: http.StatusRequestEntityTooLarge},
 		{name: "crs only", query: "crs=" + rd28992URI, wantStatus: http.StatusOK, wantContentCrs: rd},
@@ -499,6 +509,53 @@ func TestMapParamsHTTP(t *testing.T) {
 		})
 	}
 
+}
+
+func TestCenterWMSRequest(t *testing.T) {
+	for _, mapPath := range []string{
+		"/collections/" + testCollection + "/map",
+		"/collections/" + testCollection + "/styles/" + testStyle + "/map",
+	} {
+		for _, tc := range []struct {
+			name, query, crs      string
+			center                [2]float64
+			bboxWidth, bboxHeight float64
+		}{
+			{"default CRS84 center", "center=5,52&crs=" + crs84URI, "CRS:84", [2]float64{5, 52}, 0.0206, 0.0151},
+			{"EPSG4326 input and output", "center=52,5&center-crs=" + crsEPSG4326URI + "&crs=" + crsEPSG4326URI,
+				"EPSG:4326", [2]float64{52, 5}, 0.0151, 0.0206},
+			{"RD input and output", "center=155000,463000&center-crs=" + rd28992URI,
+				"EPSG:28992", [2]float64{155000, 463000}, 1416.8, 1680},
+			{"RD input transformed to CRS84", "center=155000,463000&center-crs=" + rd28992URI + "&crs=" + crs84URI,
+				"CRS:84", [2]float64{5.387204, 52.155172}, 0.0207, 0.0151},
+		} {
+			t.Run(mapPath+"/"+tc.name, func(t *testing.T) {
+				var received url.Values
+				wms := newMockWMS(t, func(r *http.Request) { received = r.URL.Query() })
+				router := newTestRouter(t, wms.URL, nil)
+				rr := doGet(router, mapPath+"?"+tc.query+"&scale-denominator=10000&mm-per-pixel=0.28", "image/png")
+				require.Equal(t, http.StatusOK, rr.Code, rr.Body.String())
+				require.NotNil(t, received)
+				require.Equal(t, tc.crs, received.Get("CRS"))
+				require.Equal(t, "506", received.Get("WIDTH"))
+				require.Equal(t, "600", received.Get("HEIGHT"))
+				require.Equal(t, received.Get("BBOX"), rr.Header().Get(engine.HeaderContentBbox))
+				bbox := parseContentBbox(t, received.Get("BBOX"))
+				require.InDelta(t, tc.center[0], (bbox[0]+bbox[2])/2, 0.000001)
+				require.InDelta(t, tc.center[1], (bbox[1]+bbox[3])/2, 0.000001)
+				require.InEpsilon(t, tc.bboxWidth, bbox[2]-bbox[0], 0.01)
+				require.InEpsilon(t, tc.bboxHeight, bbox[3]-bbox[1], 0.01)
+			})
+		}
+		t.Run("default dimensions obey limits", func(t *testing.T) {
+			var received bool
+			wms := newMockWMS(t, func(*http.Request) { received = true })
+			router := newTestRouter(t, wms.URL, func(maps *config.OgcAPIMaps) { maps.MaxWidth = 505 })
+			rr := doGet(router, "/collections/"+testCollection+"/map?center=5,52&scale-denominator=10000", "image/png")
+			require.Equal(t, http.StatusRequestEntityTooLarge, rr.Code, rr.Body.String())
+			require.False(t, received)
+		})
+	}
 }
 
 func TestMapLimitsHTTP(t *testing.T) {

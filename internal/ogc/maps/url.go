@@ -19,6 +19,8 @@ const (
 	CrsParam         = "crs"
 	BboxParam        = "bbox"
 	BboxCrsParam     = "bbox-crs"
+	CenterParam      = "center"
+	CenterCrsParam   = "center-crs"
 	WidthParam       = "width"
 	HeightParam      = "height"
 	Transparent      = "transparent"
@@ -31,6 +33,8 @@ var mapsKnownParams = map[string]struct{}{
 	CrsParam:           {},
 	BboxParam:          {},
 	BboxCrsParam:       {},
+	CenterParam:        {},
+	CenterCrsParam:     {},
 	WidthParam:         {},
 	HeightParam:        {},
 	Transparent:        {},
@@ -55,21 +59,50 @@ func (m *mapsURL) parse(supportedCrs []domain.ContentCrs) (MapRequest, error) {
 		crsErr = validateSupportedCrs(CrsParam, crs, supportedCrs)
 	}
 	bbox, bboxSRID, bboxErr := parseBbox(m.params)
+	center, centerSRID, centerErr := parseCenter(m.params)
 	width, widthErr := parseWidth(m.params)
 	height, heightErr := parseHeight(m.params)
 	transparent, transparentErr := parseTransparent(m.params)
 	mmPerPixel, mmPerPixelErr := parseMMPerPixel(m.params)
 	scale, scaleErr := parseScaleDenominator(m.params)
 
-	if err = errors.Join(err, crsErr, bboxErr, widthErr, heightErr, transparentErr, mmPerPixelErr, scaleErr); err != nil {
+	if err = errors.Join(err, crsErr, bboxErr, centerErr, widthErr, heightErr, transparentErr, mmPerPixelErr, scaleErr); err != nil {
 		return MapRequest{}, err
 	}
 	request := MapRequest{
 		transparent: transparent,
-		requested:   MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, width: width, height: height, mmPerPixel: mmPerPixel, scaleDenominator: scale},
+		requested: MapViewParameters{crs: crs, bboxSRID: bboxSRID, bbox: bbox, center: center, centerSRID: centerSRID,
+			width: width, height: height, mmPerPixel: mmPerPixel, scaleDenominator: scale},
 	}
 
 	return request, nil
+}
+
+func parseCenter(params url.Values) (geom.Coord, domain.SRID, error) {
+	if !params.Has(CenterParam) {
+		return nil, domain.UndefinedSRID, nil
+	}
+	parts := strings.Split(params.Get(CenterParam), ",")
+	if len(parts) != 2 {
+		return nil, domain.UndefinedSRID, errors.New("center must contain two coordinates")
+	}
+	center := make(geom.Coord, 2)
+	for i, part := range parts {
+		value, err := strconv.ParseFloat(strings.TrimSpace(part), 64)
+		if err != nil || !finite(value) {
+			return nil, domain.UndefinedSRID, errors.New("center coordinates must be finite numbers")
+		}
+		center[i] = value
+	}
+	crs, err := parseCrsParam(params, CenterCrsParam)
+	if err != nil {
+		return nil, domain.UndefinedSRID, err
+	}
+	if crs == "" {
+		return center, domain.WGS84SRID, nil
+	}
+	_, srid, err := parseCrs(string(crs))
+	return center, srid, err
 }
 
 func validateSupportedCrs(param string, crs domain.ContentCrs, supportedCrs []domain.ContentCrs) error {

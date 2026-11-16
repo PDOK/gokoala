@@ -136,6 +136,19 @@ func TestPhysicalBboxDimensions(t *testing.T) {
 			require.InEpsilon(t, tt.height, height, 0.005)
 		})
 	}
+
 	_, _, err := physicalBboxDimensions(geom.NewBounds(geom.XY).Set(0, 100, 1, 101), "OGC:CRS84")
 	require.Error(t, err)
+}
+
+func TestBboxAtScale(t *testing.T) {
+	center := geom.Coord{155000, 463000}
+	bbox, err := bboxAtScale(center, "EPSG:28992", 800, 600, 10000, 0.28)
+	require.NoError(t, err)
+	larger, err := bboxAtScale(center, "EPSG:28992", 800, 600, 10000, 0.56)
+	require.NoError(t, err)
+	for axis := range 2 {
+		require.InDelta(t, center[axis], (bbox.Min(axis)+bbox.Max(axis))/2, 1e-9)
+		require.InDelta(t, 2*(bbox.Max(axis)-bbox.Min(axis)), larger.Max(axis)-larger.Min(axis), 1e-8)
+	}
 }

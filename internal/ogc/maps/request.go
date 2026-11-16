@@ -17,7 +17,6 @@ type MapType string
 const (
 	DatasetMap    MapType = "Dataset Map"
 	CollectionMap MapType = "Collection Map"
-	crs84SRS              = "OGC:CRS84"
 )
 
 var ErrMapTooLarge = errors.New("map dimensions exceed configured limits")
@@ -37,6 +36,8 @@ type MapViewParameters struct {
 	crs              domain.ContentCrs
 	bboxSRID         domain.SRID
 	bbox             *geom.Bounds
+	center           geom.Coord
+	centerSRID       domain.SRID
 	width            int
 	height           int
 	mmPerPixel       float64
@@ -49,6 +50,17 @@ func (request *MapRequest) validateParamCombinations() error {
 	requested := request.requested
 	if requested.scaleDenominator != 0 && (requested.width != 0 || requested.height != 0) {
 		return errors.New("scale-denominator cannot be combined with width or height")
+	}
+	if requested.center != nil {
+		if requested.bbox != nil {
+			return errors.New("center cannot be combined with bbox")
+		}
+		if requested.scaleDenominator == 0 {
+			return errors.New("center requires scale-denominator")
+		}
+		if requested.width != 0 || requested.height != 0 {
+			return errors.New("center with scale-denominator cannot be combined with width or height")
+		}
 	}
 	return nil
 }
@@ -71,6 +83,22 @@ func (request *MapRequest) resolveValues(defaults config.DefaultMap) error {
 		resolved.mmPerPixel = mmPerPixel
 	}
 
+	if resolved.center != nil {
+		if err := resolveForCenter(&resolved, defaults); err != nil {
+			return err
+		}
+	} else {
+		if err := resolveForBbox(&resolved, request.requested, defaults); err != nil {
+			return err
+		}
+	}
+
+	request.resolved = resolved
+	return nil
+}
+
+// resolveForBbox resolves dimensions and the requested or default bbox in the output CRS.
+func resolveForBbox(resolved *MapViewParameters, requested MapViewParameters, defaults config.DefaultMap) error {
 	if resolved.bbox == nil {
 		bbox, err := parseDefaultBbox(defaults)
 		if err != nil {
@@ -90,7 +118,7 @@ func (request *MapRequest) resolveValues(defaults config.DefaultMap) error {
 	if err != nil {
 		return err
 	}
-	bbox, err = resolveMapDimensions(&resolved, request.requested, bbox, defaults)
+	bbox, err = resolveMapDimensions(resolved, requested, bbox, defaults)
 	if err != nil {
 		return err
 	}
@@ -99,8 +127,64 @@ func (request *MapRequest) resolveValues(defaults config.DefaultMap) error {
 	}
 	resolved.bbox = bbox
 	resolved.bboxSRID = bboxSRID
-	request.resolved = resolved
 	return nil
+}
+
+// resolveForCenter calculates an output-CRS bbox around the center using the scale denominator and configured default dimensions.
+func resolveForCenter(resolved *MapViewParameters, defaults config.DefaultMap) error {
+	if _, err := toMapResolution(resolved.mmPerPixel); err != nil {
+		return err
+	}
+	_, outputSRID, err := parseCrs(string(resolved.crs))
+	if err != nil {
+		return err
+	}
+	outputSRS, err := domain.SridToSrs(outputSRID)
+	if err != nil {
+		return err
+	}
+	center, err := transformCenter(resolved.center, resolved.centerSRID, outputSRS)
+	if err != nil {
+		return err
+	}
+	resolved.width, resolved.height = defaults.Width, defaults.Height
+	bbox, err := bboxAtScale(center, outputSRS, resolved.width, resolved.height, resolved.scaleDenominator, resolved.mmPerPixel)
+	if err != nil {
+		return fmt.Errorf("calculate bbox from center: %w", err)
+	}
+	outputOrder, err := proj.GetAxisOrderForCRS(outputSRS)
+	if err != nil {
+		return err
+	}
+	if outputOrder == domain.AxisOrderYX {
+		bbox = swapBboxAxes(bbox)
+	}
+	resolved.bbox, resolved.bboxSRID = bbox, outputSRID
+	return nil
+}
+
+// transformCenter normalizes center coordinates to x/y order when needed, then transforms them to the output CRS.
+func transformCenter(center geom.Coord, inputSRID domain.SRID, outputSRS string) (geom.Coord, error) {
+	inputSRS, err := domain.SridToSrs(inputSRID)
+	if err != nil {
+		return nil, fmt.Errorf("center CRS: %w", err)
+	}
+	inputOrder, err := proj.GetAxisOrderForCRS(inputSRS)
+	if err != nil {
+		return nil, fmt.Errorf("center CRS: %w", err)
+	}
+	point := append(geom.Coord(nil), center...)
+	if inputOrder == domain.AxisOrderYX {
+		point[0], point[1] = point[1], point[0]
+	}
+	point, err = util.TransformPoint(point, inputSRS, outputSRS)
+	if err != nil {
+		return nil, fmt.Errorf("transform center: %w", err)
+	}
+	if !finite(point[0]) || !finite(point[1]) {
+		return nil, errors.New("transformed center coordinates must be finite")
+	}
+	return point, nil
 }
 
 // resolveMapDimensions completes image dimensions from the normalized output bbox.
@@ -167,19 +251,18 @@ func (resolved MapViewParameters) resolveNormalizedOutputBbox() (*geom.Bounds, b
 	if err != nil {
 		return nil, false, domain.UndefinedSRID, err
 	}
-	inputSRID := resolved.bboxSRID.GetOrDefault()
-	crs84 := outputSRID == domain.WGS84SRID
+	inputSRID := domain.SRID(resolved.bboxSRID.GetOrDefault())
 	coordinates := [4]float64{resolved.bbox.Min(0), resolved.bbox.Min(1), resolved.bbox.Max(0), resolved.bbox.Max(1)}
-	if inputSRID != int(outputSRID) {
-		coordinates, err = transformBoundingBox(coordinates, inputSRID, int(outputSRID), crs84)
+	if inputSRID != outputSRID {
+		coordinates, err = transformBoundingBox(coordinates, inputSRID, outputSRID)
 		if err != nil {
 			return nil, false, domain.UndefinedSRID, err
 		}
 	}
 	bbox := geom.NewBounds(geom.XY).Set(coordinates[:]...)
-	srs := fmt.Sprintf("EPSG:%d", outputSRID)
-	if crs84 {
-		srs = crs84SRS
+	srs, err := domain.SridToSrs(outputSRID)
+	if err != nil {
+		return nil, false, domain.UndefinedSRID, err
 	}
 	order, err := proj.GetAxisOrderForCRS(srs)
 	if err != nil {
@@ -196,14 +279,14 @@ func swapBboxAxes(bbox *geom.Bounds) *geom.Bounds {
 	return geom.NewBounds(geom.XY).Set(bbox.Min(1), bbox.Min(0), bbox.Max(1), bbox.Max(0))
 }
 
-func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID int, outputCRS84 bool) ([4]float64, error) {
-	inputSRS := fmt.Sprintf("EPSG:%d", inputSRID)
-	if inputSRID == domain.WGS84SRID {
-		inputSRS = crs84SRS
+func transformBoundingBox(bbox [4]float64, inputSRID, outputSRID domain.SRID) ([4]float64, error) {
+	inputSRS, err := domain.SridToSrs(inputSRID)
+	if err != nil {
+		return [4]float64{}, err
 	}
-	outputSRS := fmt.Sprintf("EPSG:%d", outputSRID)
-	if outputCRS84 {
-		outputSRS = crs84SRS
+	outputSRS, err := domain.SridToSrs(outputSRID)
+	if err != nil {
+		return [4]float64{}, err
 	}
 	inputAxisOrder, err := proj.GetAxisOrderForCRS(inputSRS)
 	if err != nil {
@@ -275,9 +358,9 @@ func resolveScaleDimensions(resolved *MapViewParameters, bbox *geom.Bounds) erro
 	if err != nil {
 		return err
 	}
-	srs := fmt.Sprintf("EPSG:%d", srid)
-	if srid == domain.WGS84SRID {
-		srs = crs84SRS
+	srs, err := domain.SridToSrs(srid)
+	if err != nil {
+		return err
 	}
 	resolved.width, resolved.height, err = dimensionsAtScale(bbox, srs, resolved.scaleDenominator, resolved.mmPerPixel)
 	if errors.Is(err, errDimensionOverflow) {
