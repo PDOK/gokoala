@@ -150,7 +150,8 @@ func physicalAxisScale(crs84Transform, crs84 *proj.PJ, bbox *geom.Bounds, center
 	coordinates := [2][2]float64{center, center}
 	coordinates[0][axis], coordinates[1][axis] = lower, upper
 	var points [2]proj.Coord
-	for i, coordinate := range coordinates {
+	for i := range points {
+		coordinate := coordinates[i]
 		point, err := crs84Transform.Forward(proj.NewCoord(coordinate[0], coordinate[1], 0, 0))
 		if err != nil {
 			return 0, fmt.Errorf("transform bbox center sample: %w", err)
