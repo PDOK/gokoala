@@ -41,8 +41,12 @@
 					{"$ref": "#/components/parameters/bbox"},
 					{"$ref": "#/components/parameters/crs-map"},
 					{"$ref": "#/components/parameters/bbox-crs-map"},
+					{"$ref": "#/components/parameters/center-map"},
+					{"$ref": "#/components/parameters/center-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/scale-denominator"},
+					{"$ref": "#/components/parameters/mm-per-pixel"},
 					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/f-map"}
 				],
@@ -85,8 +89,12 @@
 					{"$ref": "#/components/parameters/bbox"},
 					{"$ref": "#/components/parameters/crs-map"},
 					{"$ref": "#/components/parameters/bbox-crs-map"},
+					{"$ref": "#/components/parameters/center-map"},
+					{"$ref": "#/components/parameters/center-crs-map"},
 					{"$ref": "#/components/parameters/width"},
 					{"$ref": "#/components/parameters/height"},
+					{"$ref": "#/components/parameters/scale-denominator"},
+					{"$ref": "#/components/parameters/mm-per-pixel"},
 					{"$ref": "#/components/parameters/transparent-map"},
 					{"$ref": "#/components/parameters/styleId-collection"},
 					{"$ref": "#/components/parameters/f-map"}
@@ -147,19 +155,49 @@
 					"type": "string"
 				}
 			},
+			"center-map": {
+				"name": "center",
+				"in": "query",
+				"description": "Center of the map in center-crs axis order. Requires scale-denominator and cannot be combined with bbox, width or height. The bbox is calculated using the configured default dimensions and local physical scale at the center; accuracy may vary for large extents. Bboxes crossing the antimeridian or poles are not handled specially.",
+				"required": false,
+				"style": "form",
+				"explode": false,
+				"schema": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}
+			},
+			"center-crs-map": {
+				"name": "center-crs",
+				"in": "query",
+				"description": "CRS of center as an HTTP OGC CRS URI or safe CURIE. Defaults to CRS84 longitude/latitude. Input CRSs must support transformation to the output CRS through PROJ; ignored when center is absent.",
+				"required": false,
+				"schema": {"type": "string"}
+			},
 			"width": {
 				"name": "width",
 				"in": "query",
-				"description": "Width of the map in pixels. Missing dimensions are calculated from the bbox aspect ratio in the output CRS. If a bbox but neither dimension is supplied, the default height anchors the calculated width. If bbox and both dimensions are omitted, the configured default view is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
+				"description": "Width of the map in pixels. Cannot be combined with scale-denominator. Missing dimensions are calculated from the bbox aspect ratio in the output CRS. If a bbox but neither dimension is supplied, the default height anchors the calculated width. If bbox and both dimensions are omitted, the configured default view is used. Values exceeding maxWidth or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,
 				"schema": {"type": "integer", "minimum": 1, "maximum": {{ .Config.OgcAPI.Maps.MaxWidth }}, "default": {{ .Config.OgcAPI.Maps.DefaultMap.Width }}}
 			},
+			"scale-denominator": {
+				"name": "scale-denominator",
+				"in": "query",
+				"description": "Positive scale denominator used with the display resolution to calculate image dimensions for the requested or default bbox, or to calculate a bbox around a supplied center with the configured default dimensions. Physical scale is estimated locally at the center of the output bbox; accuracy may vary for large extents. Cannot be combined with width or height. Dimensions exceeding map limits return HTTP 413. Unrepresentable resolutions are rejected.",
+				"required": false,
+				"schema": {"type": "number", "exclusiveMinimum": true, "minimum": 0}
+			},
+			"mm-per-pixel": {
+				"name": "mm-per-pixel",
+				"in": "query",
+				"description": "Display pixel size in millimetres. Used with scale-denominator to calculate image dimensions. Defaults to the configured value.",
+				"required": false,
+				"schema": {"type": "number", "exclusiveMinimum": true, "minimum": 0}
+			},
 			"height": {
 				"name": "height",
 				"in": "query",
-				"description": "Height of the map in pixels. If omitted with width supplied, calculated from the bbox aspect ratio in the output CRS. When both dimensions but no bbox are supplied, a bbox is calculated preserving the default center and vertical resolution. Explicit bbox and both dimensions are preserved. Values exceeding maxHeight or maxPixels return HTTP 413.",
+				"description": "Height of the map in pixels. Cannot be combined with scale-denominator. If omitted with width supplied, calculated from the bbox aspect ratio in the output CRS. When both dimensions but no bbox are supplied, a bbox is calculated preserving the default center and vertical resolution. Explicit bbox and both dimensions are preserved. Values exceeding maxHeight or maxPixels return HTTP 413.",
 				"required": false,
 				"style": "form",
 				"explode": false,

@@ -26,6 +26,7 @@ type paramCase struct {
 	wantBbox        []float64
 	wantWidth       int
 	wantHeight      int
+	wantScale       float64
 	wantTransparent bool
 	wantErr         bool
 	knownDeviation  string
@@ -44,6 +45,11 @@ var paramCases = []paramCase{
 	{name: "repeated transparent uses first value", query: "transparent=true&transparent=false", wantTransparent: true},
 	{name: "width only", query: "width=800", wantWidth: 800, wantTransparent: true},
 	{name: "height only", query: "height=600", wantHeight: 600, wantTransparent: true},
+	{name: "scale denominator", query: "scale-denominator=8000.5", wantScale: 8000.5, wantTransparent: true},
+	{name: "invalid scale", query: "scale-denominator=NaN", wantErr: true},
+	{name: "empty scale", query: "scale-denominator=", wantErr: true},
+	{name: "scale with width", query: "scale-denominator=8000&width=100", wantErr: true},
+	{name: "scale with height and bbox", query: "bbox=" + bboxCRS84 + "&scale-denominator=8000&height=100", wantErr: true},
 	{name: "crs only", query: "crs=" + rd28992URI, wantCRS: rd28992URI, wantTransparent: true},
 	{name: "whitespace crs", query: "crs=+++", wantTransparent: true},
 	{name: "trimmed crs", query: "crs=++" + crs84URI + "++", wantCRS: crs84URI, wantTransparent: true},
@@ -149,6 +155,9 @@ func TestMapParamsParse(t *testing.T) {
 			m := mapsURL{params: params}
 
 			request, err := m.parse(supportedCrs)
+			if err == nil {
+				err = request.validateParamCombinations()
+			}
 
 			if tc.wantErr {
 				require.Error(t, err, tc.knownDeviation)
@@ -169,6 +178,7 @@ func TestMapParamsParse(t *testing.T) {
 			}
 			assert.Equal(t, tc.wantWidth, request.requested.width, tc.knownDeviation)
 			assert.Equal(t, tc.wantHeight, request.requested.height, tc.knownDeviation)
+			assert.InDelta(t, tc.wantScale, request.requested.scaleDenominator, 1e-9)
 			assert.Equal(t, tc.wantTransparent, request.transparent)
 		})
 	}
