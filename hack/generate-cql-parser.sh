@@ -33,7 +33,7 @@ else
   # Run against CQL grammar (note: when updating this command also change it above for the plain Java variant)
   echo "running ANTLR to generate CQL parser"
   cd internal/ogc/features/cql/parser
-  docker run --rm -v `pwd`/:/work -w /work antlr:local ${ANTLR_PARAMS}
+  docker run --rm -v "$PWD/":/work -w /work antlr:local ${ANTLR_PARAMS}
 fi
 echo "finished generating CQL parser"
 
