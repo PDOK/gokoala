@@ -14,10 +14,10 @@ then
     docker build -f hack/crd/Dockerfile -t gokoala-controller-tools .
 
     # Run against GoKoala config
-    docker run -v `pwd`/:/gokoala gokoala-controller-tools object paths="/gokoala/config/..." output:dir="/gokoala/config/"
+    docker run -v "$PWD/":/gokoala gokoala-controller-tools object paths="/gokoala/config/..." output:dir="/gokoala/config/"
 else
    echo "controller-gen found, using this local install instead of Docker container"
 
    # Run against GoKoala config
-   controller-gen object paths="$(pwd)/config/..." output:dir="$(pwd)/config/"
+   controller-gen object paths="$PWD/config/..." output:dir="$PWD/config/"
 fi

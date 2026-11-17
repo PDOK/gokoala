@@ -122,8 +122,8 @@ GLOBAL OPTIONS:
 
 Example (config-file is mandatory):
 
-```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
+```bash
+docker run -v "$(pwd)/examples":/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
 ```
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
@@ -154,7 +154,7 @@ For example:
 - Mount `mytheme` as a volume and start GoKoala with the custom theme:
 
 ```bash
-docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -it pdok/gokoala \
+docker run -v "$(pwd)/examples":/examples -v "$(pwd)/mytheme":/mytheme -p 8080:8080 -it pdok/gokoala \
  --config-file /examples/config_vectortiles.yaml --theme-file /mytheme/theme.yaml
 ```
 
