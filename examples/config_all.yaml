@@ -151,6 +151,15 @@ ogcApi:
         layers:
           - id: addresses
             name: addresses
+            title: Addresses
+            styles:
+              - id: default
+                title: Addresses
+                # style name as advertised by the WMS service
+                wmsStyle: default
+              - id: labels
+                title: Addresses with labels
+                wmsStyle: addresses-labels
         supportedSrs:
           - srs: EPSG:28992
 

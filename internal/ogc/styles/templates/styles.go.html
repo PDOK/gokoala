@@ -53,9 +53,9 @@
                 {{ range $coll := .Config.OgcAPI.Maps.Collections }}
                 {{ range $style := $coll.GetStyles }}
                 <option data-kind="map"
-                        data-url="collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=html"
+                        data-url="collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map"
                         data-metadata="collections/{{ $coll.ID }}/styles"
-                        data-format="Map (PNG, JPEG, HTML)">{{ $style.Title }}</option>
+                        data-format="PNG/JPEG">{{ $style.Title }}</option>
                 {{ end }}
                 {{ end }}
                 {{ end }}
