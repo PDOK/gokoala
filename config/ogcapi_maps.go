@@ -153,12 +153,24 @@ func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
 }
 
 func (cm MapsCollection) GetStyles() []MapStyle {
+	if len(cm.Layers) == 0 {
+		return nil
+	}
+
 	var result []MapStyle
-	for _, layer := range cm.Layers {
-		for _, style := range layer.Styles {
-			if !slices.ContainsFunc(result, func(s MapStyle) bool { return s.ID == style.ID }) {
-				result = append(result, style)
+	for _, style := range cm.Layers[0].Styles {
+		if slices.ContainsFunc(result, func(s MapStyle) bool { return s.ID == style.ID }) {
+			continue
+		}
+		sharedByAll := true
+		for _, layer := range cm.Layers[1:] {
+			if !slices.ContainsFunc(layer.Styles, func(s MapStyle) bool { return s.ID == style.ID }) {
+				sharedByAll = false
+				break
 			}
+		}
+		if sharedByAll {
+			result = append(result, style)
 		}
 	}
 

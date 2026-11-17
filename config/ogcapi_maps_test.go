@@ -27,12 +27,28 @@ func TestMapsCollection_GetStyles(t *testing.T) {
 			want: nil,
 		},
 		{
-			name: "same style on multiple layers is returned once",
+			name: "only styles shared by all layers are returned",
 			collection: MapsCollection{ID: "c", Layers: []MapLayer{
-				{ID: "l1", Styles: []MapStyle{{ID: "a", Title: "A"}}},
-				{ID: "l2", Styles: []MapStyle{{ID: "a"}, {ID: "b"}}},
+				{ID: "l1", Styles: []MapStyle{{ID: "a", Title: "A"}, {ID: "c"}}},
+				{ID: "l2", Styles: []MapStyle{{ID: "a"}, {ID: "b"}, {ID: "c"}}},
 			}},
-			want: []MapStyle{{ID: "a", Title: "A"}, {ID: "b"}},
+			want: []MapStyle{{ID: "a", Title: "A"}, {ID: "c"}},
+		},
+		{
+			name: "no shared styles",
+			collection: MapsCollection{ID: "c", Layers: []MapLayer{
+				{ID: "l1", Styles: []MapStyle{{ID: "a"}}},
+				{ID: "l2", Styles: []MapStyle{{ID: "b"}}},
+			}},
+			want: nil,
+		},
+		{
+			name: "layer without styles means no shared styles",
+			collection: MapsCollection{ID: "c", Layers: []MapLayer{
+				{ID: "l1", Styles: []MapStyle{{ID: "a"}}},
+				{ID: "l2"},
+			}},
+			want: nil,
 		},
 		{
 			name: "order of first appearance",
