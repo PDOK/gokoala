@@ -167,7 +167,7 @@ func parseCrsParam(params url.Values, name string) (domain.ContentCrs, error) {
 
 func parseCrs(identifier string) (domain.ContentCrs, domain.SRID, error) {
 	identifier = strings.TrimSpace(identifier)
-	
+
 	// Handle Safe CURIE
 	if domain.HasSafeCURIESyntax(identifier) {
 		srid, err := domain.ParseSafeCURIEToSRID(identifier)
