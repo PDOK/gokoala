@@ -123,7 +123,7 @@ func newOpenAPI(config *gokoalaconfig.Config, extraOpenAPIFiles []string, openAP
 	if config.OgcAPI.FeaturesSearch != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, featuresSearchSpec)
 	}
-	if config.OgcAPI.Styles != nil {
+	if config.OgcAPI.Styles != nil || config.OgcAPI.Maps != nil {
 		defaultOpenAPIFiles = append(defaultOpenAPIFiles, stylesSpec)
 	}
 	if config.OgcAPI.GeoVolumes != nil {
