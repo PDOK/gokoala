@@ -58,6 +58,22 @@
 			{{- if $layer.Styles -}}{{- $hasStyles = true -}}{{- end -}}
 		{{- end -}}
 		{{- if $hasStyles -}},
+		"/collections/{{ $coll.ID }}/styles": {
+			"get": {
+				"tags": [
+					"Maps"
+				],
+				"summary": "Retrieve the styles available for the specified collection",
+				"operationId": "{{ $coll.ID }}.collection.getStyles",
+				"parameters": [
+					{"$ref": "#/components/parameters/f-styles"}
+				],
+				"responses": {
+					"200": {"$ref": "#/components/responses/CollectionStyles"},
+					{{block "problems" $ }}{{end}}
+				}
+			}
+		},
 		"/collections/{{ $coll.ID }}/styles/{styleId}/map": {
 			"get": {
 				"tags": [
@@ -161,6 +177,18 @@
 				"style": "form",
 				"explode": false
 			},
+			"f-styles": {
+				"name": "f",
+				"in": "query",
+				"description": "The format of the response. Accepted values are 'json' or 'html'.",
+				"required": false,
+				"schema": {
+					"type": "string",
+					"enum": ["json", "html"]
+				},
+				"style": "form",
+				"explode": false
+			},
 			"styleId-collection": {
 				"name": "styleId",
 				"in": "path",
@@ -180,6 +208,39 @@
 				},
 				"headers": {
 					{{block "headers" . }}{{end}}
+				}
+			},
+			"CollectionStyles": {
+				"description": "The styles available for the collection, with links to the map of each style.",
+				"headers": {
+					{{block "headers" . }}{{end}}
+				},
+				"content": {
+					"application/json": {
+						"schema": {
+							"type": "object",
+							"required": ["links", "styles"],
+							"properties": {
+								"links": {"type": "array", "items": {"type": "object"}},
+								"default": {"type": "string"},
+								"styles": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"required": ["id", "links"],
+										"properties": {
+											"id": {"type": "string"},
+											"title": {"type": "string"},
+											"links": {"type": "array", "items": {"type": "object"}}
+										}
+									}
+								}
+							}
+						}
+					},
+					"text/html": {
+						"schema": {"type": "string"}
+					}
 				}
 			},
 			"Map": {
