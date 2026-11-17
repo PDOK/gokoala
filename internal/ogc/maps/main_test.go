@@ -350,7 +350,7 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 							{
 								ID:     "layer1",
 								Name:   "layer1",
-								Styles: []config.MapStyle{{ID: testStyle, WMSStyle: "default"}},
+								Styles: []config.MapStyle{{ID: testStyle, Title: "Test style", WMSStyle: "default"}},
 							},
 						},
 					},

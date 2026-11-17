@@ -144,7 +144,7 @@ func Test_newOpenAPI(t *testing.T) {
 								{
 									ID: "map1",
 									Layers: []gokoalaconfig.MapLayer{
-										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", WMSStyle: "default"}}},
+										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", WMSStyle: "default"}}},
 									},
 									SupportedSrs: []gokoalaconfig.MapsSupportedSrs{{Srs: "EPSG:28992"}},
 								},
