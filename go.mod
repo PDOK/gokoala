@@ -3,7 +3,7 @@ module github.com/PDOK/gokoala
 // Ideally we use the latest version of Go. But since the 'config' package is also used as a library we
 // need to take downstream consumers in mind which may not yet be able to upgrade. In that case the go
 // and toolchain versions in go.mod may differ.
-go 1.26.10
+go 1.26.11
 
 require (
 	dario.cat/mergo v1.0.2
@@ -13,7 +13,7 @@ require (
 	github.com/docker/go-units v0.5.0
 	github.com/elnormous/contenttype v1.0.4
 	github.com/failsafe-go/failsafe-go v0.9.6
-	github.com/getkin/kin-openapi v0.146.0
+	github.com/getkin/kin-openapi v0.149.0
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-chi/cors v1.2.2
 	github.com/go-playground/validator/v10 v10.30.3
