@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -151,6 +152,24 @@ func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
 	return nil
 }
 
+func (cm MapsCollection) GetStyles() []MapStyle {
+	var result []MapStyle
+	for _, layer := range cm.Layers {
+		for _, style := range layer.Styles {
+			if !slices.ContainsFunc(result, func(s MapStyle) bool { return s.ID == style.ID }) {
+				result = append(result, style)
+			}
+		}
+	}
+
+	return result
+}
+
+// MapsStyleID returns the globally unique ID of a Maps style, as advertised on the global /styles endpoint.
+func (c *Config) MapsStyleID(collectionID, styleID string) string {
+	return strings.ToLower(c.ServiceIdentifier) + "_" + collectionID + "_" + styleID
+}
+
 // +kubebuilder:object:generate=true
 type MapsSupportedSrs struct {
 	// Supported coordinate reference system.
@@ -184,6 +203,9 @@ type MapStyle struct {
 
 	// Style name advertised by the WMS service.
 	WMSStyle string `yaml:"wmsStyle" json:"wmsStyle" validate:"required"`
+
+	// Readable title of the style.
+	Title string `yaml:"title" json:"title" validate:"required"`
 }
 
 func validateMapCollections(collections []MapsCollection, defaultCRS string) error {

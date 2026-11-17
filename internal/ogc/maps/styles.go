@@ -2,7 +2,6 @@ package maps
 
 import (
 	"net/http"
-	"slices"
 
 	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
@@ -17,7 +16,7 @@ const (
 
 type stylesPage struct {
 	Collection config.MapsCollection
-	StyleIDs   []string
+	Styles     []config.MapStyle
 }
 
 func renderStyles(e *engine.Engine, collections map[string]config.MapsCollection) {
@@ -25,7 +24,7 @@ func renderStyles(e *engine.Engine, collections map[string]config.MapsCollection
 		path := geospatial.CollectionsPath + "/" + collection.ID + stylesCrumb
 		page := &stylesPage{
 			Collection: collection,
-			StyleIDs:   getStyleIDsFromCollection(collection),
+			Styles:     collection.GetStyles(),
 		}
 		instanceName := engine.WithInstanceName(collection.ID)
 
@@ -53,19 +52,6 @@ func (m *Maps) Styles() http.HandlerFunc {
 			handleFormatNotSupported(w, format)
 		}
 	}
-}
-
-func getStyleIDsFromCollection(collection config.MapsCollection) []string {
-	var ids []string
-	for _, layer := range collection.Layers {
-		for _, style := range layer.Styles {
-			if !slices.Contains(ids, style.ID) {
-				ids = append(ids, style.ID)
-			}
-		}
-	}
-
-	return ids
 }
 
 func stylesBreadcrumbs(collection config.MapsCollection) []engine.Breadcrumb {
