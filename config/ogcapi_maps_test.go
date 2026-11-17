@@ -73,3 +73,18 @@ func TestMapStyle_TitleRequired(t *testing.T) {
 	require.Error(t, v.Struct(MapStyle{ID: "a", WMSStyle: "a"}))
 	require.NoError(t, v.Struct(MapStyle{ID: "a", WMSStyle: "a", Title: "A"}))
 }
+
+func TestValidateMapCollections_AmbiguousStyleIDs(t *testing.T) {
+	coll := func(id, styleID string) MapsCollection {
+		return MapsCollection{
+			ID:           id,
+			SupportedSrs: []MapsSupportedSrs{{Srs: "EPSG:28992"}},
+			Layers:       []MapLayer{{ID: "l", Styles: []MapStyle{{ID: styleID}}}},
+		}
+	}
+
+	require.NoError(t, validateMapCollections([]MapsCollection{coll("a", "x"), coll("b", "x")}, "EPSG:28992"))
+
+	err := validateMapCollections([]MapsCollection{coll("a_b", "c"), coll("a", "b_c")}, "EPSG:28992")
+	require.ErrorContains(t, err, "ambiguous global style ID 'a_b_c': 'a_b/c' clashes with 'a/b_c'")
+}

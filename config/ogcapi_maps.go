@@ -212,6 +212,7 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 	var errMessages []string
 	defaultCode, defaultErr := parseMapEPSGCode(defaultCRS)
 	collectionIDs := make(map[string]struct{})
+	globalStyleIDs := make(map[string]string)
 	for _, collection := range collections {
 		if _, exists := collectionIDs[collection.ID]; exists {
 			errMessages = append(errMessages, fmt.Sprintf("duplicate maps collection ID '%s'", collection.ID))
@@ -248,6 +249,8 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 				styleIDs[style.ID] = struct{}{}
 			}
 		}
+
+		errMessages = append(errMessages, ambiguousStyleIDs(collection, globalStyleIDs)...)
 	}
 
 	if len(errMessages) > 0 {
@@ -255,6 +258,20 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 	}
 
 	return nil
+}
+
+// ambiguousStyleIDs checks for cases where ids a_b + _c and a_ + b_c would both result in a_b_c..
+func ambiguousStyleIDs(collection MapsCollection, seen map[string]string) []string {
+	var errMessages []string
+	for _, style := range collection.GetStyles() {
+		joined, pair := collection.ID+"_"+style.ID, collection.ID+"/"+style.ID
+		if previous, exists := seen[joined]; exists {
+			errMessages = append(errMessages, fmt.Sprintf("ambiguous global style ID '%s': '%s' clashes with '%s'", joined, previous, pair))
+		}
+		seen[joined] = pair
+	}
+
+	return errMessages
 }
 
 func validateMapDefaults(dm DefaultMap) error {
