@@ -3,7 +3,7 @@
     <link rel="stylesheet" type="text/css" href="{{ env "VIEWER_URL" | default "view-component" }}/styles.css">
 {{ end }}
 {{ define "content" }}
-{{ if .Config.OgcAPI.Styles }}
+{{ if or .Params.HasTiles .Params.HasMaps }}
   {{ $viewerUrl := env "VIEWER_URL" | default "view-component" }}
   <hgroup>
     <h1 class="title" id="title">{{ .Config.Title }} - {{ i18n "Styles" }}</h1>
@@ -18,60 +18,71 @@
   <div class="row">
     <div class="col-md-6">
       {{ $baseUrl := .Config.BaseURL }}
-      {{ $defaultSrs := (index .Params.SupportedProjections 0)}}
       {{ $projections := .Params.AllProjections }}
-      {{ $defaultStyle := .Config.OgcAPI.Styles.Default }}
+      {{ $defaultSrs := "" }}
+      {{ $defaultStyle := "" }}
+      {{ if .Params.HasTiles }}
+        {{ $defaultSrs = index .Params.SupportedProjections 0 }}
+        {{ $defaultStyle = .Config.OgcAPI.Styles.Default }}
+      {{ end }}
       <table class="table table-borderless table-sm w-auto">
         <tbody>
           <tr>
-          {{ if and (eq (len .Config.OgcAPI.Styles.SupportedStyles) 1) (eq (len .Params.SupportedProjections) 1) }}
-            <td class="w-auto text-nowrap fw-bold">
-              Style
-            </td>
-            <td class="w-auto px-2">
-              {{ (index .Config.OgcAPI.Styles.SupportedStyles 0).Title }} ({{ (get $projections $defaultSrs.Srs) }})
-            </td>
-          {{ else }}
             <td class="w-auto text-nowrap">
               <label for="styles" class="col-form-label fw-bold">Style</label>
             </td>
             <td class="w-auto px-2">
-              {{ $supportedSrs := .Params.SupportedProjections }}
               <select id="styles" class="form-select">
+                {{ if .Params.HasTiles }}
                 {{ range $style := .Config.OgcAPI.Styles.SupportedStyles }}
-                {{ range $srs := $supportedSrs }}
+                {{/* the Tiles viewer can only show Mapbox styles, so flag styles that offer that format */}}
+                {{ $hasMapbox := false }}
+                {{ range $format := $style.Formats }}{{ if eq $format.Format "mapbox" }}{{ $hasMapbox = true }}{{ end }}{{ end }}
+                {{ range $srs := $.Params.SupportedProjections }}
                 {{ $projection := get $projections (index $srs).Srs }}
-                <option value='{"style":"{{ $style.ID }}__{{ lower $projection }}","proj":"{{ $projection }}"}'>{{ $style.Title }} ({{ get $projections (index $srs).Srs }})</option>
+                <option data-kind="mapbox"
+                        data-url="styles/{{ $style.ID }}__{{ lower $projection }}"
+                        data-metadata="styles/{{ $style.ID }}__{{ lower $projection }}/metadata"
+                        data-format="Mapbox style"
+                        data-proj="{{ $projection }}"{{ if $hasMapbox }}
+                        data-viewer="tiles"{{ end }}>{{ $style.Title }} ({{ $projection }})</option>
+                {{ end }}
+                {{ end }}
+                {{ end }}
+                {{ if .Params.HasMaps }}
+                {{ range $coll := .Config.OgcAPI.Maps.Collections }}
+                {{ range $style := $coll.GetStyles }}
+                <option data-kind="map"
+                        data-url="collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=html"
+                        data-metadata="collections/{{ $coll.ID }}/styles"
+                        data-format="Map (PNG, JPEG, HTML)">{{ $style.Title }}</option>
+                {{ end }}
                 {{ end }}
                 {{ end }}
               </select>
             </td>
-          {{ end }}
           </tr>
+          {{/* Filled by the script below, based on the selected option in the dropdown */}}
           <tr>
             <td class="w-auto text-nowrap fw-bold">
               URL
             </td>
             <td class="w-auto px-2">
-              <a id="href-url" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}">
-                 {{ $baseUrl }}/styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}
-              </a>
+              <a id="href-url" href="#"></a>
             </td>
           </tr>
           <tr>
             <td class="w-auto text-nowrap fw-bold">
               {{ i18n "Format" }}
             </td>
-            <td class="w-auto px-2">
-              Mapbox style
-            </td>
+            <td class="w-auto px-2" id="style-format"></td>
           </tr>
           <tr>
             <td class="w-auto text-nowrap fw-bold">
               Metadata
             </td>
             <td class="w-auto px-2">
-              <a id="href-metadata" href="styles/{{ $defaultStyle }}__{{ get $projections $defaultSrs.Srs | lower }}/metadata"
+              <a id="href-metadata" href="#"
                  aria-label="{{ i18n "StyleMetadata" }} (style)">
                 {{ i18n "StyleMetadata" }}
               </a>
@@ -80,7 +91,8 @@
         </tbody>
       </table>
     </div>
-    <div class="col-md-6">
+    {{ if .Params.HasTiles }}
+    <div class="col-md-6" id="styles-viewer">
       <script type="module" src="{{ $viewerUrl }}/polyfills.js"></script>
       <script type="module" src="{{ $viewerUrl }}/main.js"></script>
        <p>{{ i18n "StylingExample" }}:</p>
@@ -90,25 +102,33 @@
         center-x="5.3896944" center-y="52.1562499">
       </app-vectortile-view>
     </div>
+    {{ end }}
   </div>
   <script>
     document.addEventListener('input', function (event) {
       // only operate on styles dropdown
       if (event.target.id !== 'styles') return;
       // update table fields
-      const value = JSON.parse(event.target.value);
-      const selectedStyle = value.style;
-      const selectedProjection = value.proj;
+      const selected = event.target.selectedOptions[0].dataset;
       const urlHref = document.getElementById('href-url');
       const metadataHref = document.getElementById('href-metadata');
-      urlHref.textContent = '{{ $baseUrl }}/styles/' + encodeURIComponent(selectedStyle);
-      urlHref.setAttribute('href', 'styles/' + encodeURIComponent(selectedStyle));
-      metadataHref.setAttribute('href', 'styles/' + encodeURIComponent(selectedStyle) + '/metadata');
-      // update style-url in app-vectortile-view
+      urlHref.textContent = '{{ $baseUrl }}/' + selected.url;
+      urlHref.setAttribute('href', selected.url);
+      document.getElementById('style-format').textContent = selected.format;
+      metadataHref.setAttribute('href', selected.metadata);
+
+      // viewer is only available for tiles
       const viewer = document.getElementById('styles-vectortile-view')
-      viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + encodeURIComponent(selectedProjection))
-      viewer.setAttribute('style-url', '{{ $baseUrl }}/styles/' + encodeURIComponent(selectedStyle) + '?f=mapbox')
+      if (viewer) {
+        document.getElementById('styles-viewer').hidden = selected.viewer !== 'tiles'
+        if (selected.viewer === 'tiles') {
+          viewer.setAttribute('tile-url', '{{ $baseUrl }}/tiles/' + encodeURIComponent(selected.proj))
+          viewer.setAttribute('style-url', '{{ $baseUrl }}/' + selected.url + '?f=mapbox')
+        }
+      }
     }, false);
+    // trigger initial event
+    document.getElementById('styles').dispatchEvent(new Event('input', {bubbles: true}));
   </script>
   <noscript>Enable Javascript to display vector tiles viewer</noscript>
 {{ end }}
