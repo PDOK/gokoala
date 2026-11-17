@@ -87,6 +87,28 @@ func TestCommonCore_LandingPage(t *testing.T) {
 			},
 		},
 		{
+			name: "landing page as JSON links to styles when only maps is configured",
+			fields: fields{
+				configFile: "examples/config_maps.yaml",
+				url:        "http://localhost:8080/?f=json",
+			},
+			want: want{
+				body:       "http://www.opengis.net/def/rel/ogc/1.0/styles",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "landing page as Markdown links to styles when only maps is configured",
+			fields: fields{
+				configFile: "examples/config_maps.yaml",
+				url:        "http://localhost:8080/?f=md",
+			},
+			want: want{
+				body:       "/styles): OGC API Styles supported by this API.",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "landing page as HTML with Thumbnail",
 			fields: fields{
 				configFile: "internal/engine/testdata/config_resources_dir.yaml",
