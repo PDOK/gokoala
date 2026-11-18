@@ -63,7 +63,7 @@ func (p *Postgres) Init(index string, srid int, lang language.Tag) error {
 	if err := p.createCollation(lang); err != nil {
 		return err
 	}
-	if err := p.createIndexes(index, false); err != nil {
+	if err := p.createIndexes(index); err != nil {
 		return err
 	}
 	if err := p.createFunctions(index); err != nil {
@@ -195,34 +195,31 @@ func createExtensions(ctx context.Context, db *pgx.Conn) error {
 	return nil
 }
 
-func (p *Postgres) createIndexes(table string, usePrefix bool) error {
+// prefixedIndexName returns the index name prefixed with the table name, since index names
+// must be unique within a schema (which may contain multiple search indexes and their partitions).
+func prefixedIndexName(table string, indexName string) string {
+	return fmt.Sprintf("%s_%s", table, indexName)
+}
+
+func (p *Postgres) createIndexes(table string) error {
 	// GIN indexes are best for text search
-	indexName := indexNameFullText
-	if usePrefix {
-		indexName = fmt.Sprintf("%s_%s", table, indexNameFullText)
-	}
-	_, err := p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gin(ts);`, table, indexName))
+	_, err := p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gin(ts);`,
+		table, prefixedIndexName(table, indexNameFullText)))
 	if err != nil {
 		return fmt.Errorf("error creating GIN index: %w", err)
 	}
 
 	// GIST indexes for geometry column to support search within a bounding box
-	indexName = indexNameGeometry
-	if usePrefix {
-		indexName = fmt.Sprintf("%s_%s", table, indexNameGeometry)
-	}
-	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(geometry);`, table, indexName))
+	_, err = p.db.Exec(context.Background(), fmt.Sprintf(`create index if not exists %[2]s on only %[1]s using gist(geometry);`,
+		table, prefixedIndexName(table, indexNameGeometry)))
 	if err != nil {
 		return fmt.Errorf("error creating geometry GIST index: %w", err)
 	}
 
 	// index used to pre-rank results when generic search terms are used
-	indexName = indexNamePreRank
-	if usePrefix {
-		indexName = fmt.Sprintf("%s_%s", table, indexNamePreRank)
-	}
 	preRankIndex := fmt.Sprintf(`create index if not exists %[2]s on only %[1]s
-		(array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`, table, indexName)
+		(array_length(string_to_array(suggest, ' '), 1) asc, display_name collate "custom_numeric" asc);`,
+		table, prefixedIndexName(table, indexNamePreRank))
 	_, err = p.db.Exec(context.Background(), preRankIndex)
 	if err != nil {
 		return fmt.Errorf("error creating pre-rank index: %w", err)

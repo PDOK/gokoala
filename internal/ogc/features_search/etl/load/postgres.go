@@ -80,7 +80,7 @@ func (p *Postgres) PreLoad(collectionID string, index string) error {
 		if err = p.createCheck(collectionID); err != nil {
 			return err
 		}
-		if err = p.createIndexes(p.partitionToLoad, true); err != nil {
+		if err = p.createIndexes(p.partitionToLoad); err != nil {
 			return err
 		}
 	}
@@ -126,10 +126,11 @@ func (p *Postgres) PostLoad(collectionID string, index string, revision string) 
 	}
 
 	for _, indexName := range indexNames {
-		attachIndex := fmt.Sprintf(`alter index %[2]s attach partition %[1]s_%[2]s;`, p.partitionToLoad, indexName)
+		parentIndex := prefixedIndexName(index, indexName)
+		attachIndex := fmt.Sprintf(`alter index %[1]s attach partition %[2]s;`, parentIndex, prefixedIndexName(p.partitionToLoad, indexName))
 		_, err = p.db.Exec(context.Background(), attachIndex)
 		if err != nil {
-			return fmt.Errorf("error attaching partition index to parent index: %s: %w", indexName, err)
+			return fmt.Errorf("error attaching partition index to parent index: %s: %w", parentIndex, err)
 		}
 	}
 
@@ -158,7 +159,8 @@ func (p *Postgres) Optimize(index string) error {
 
 	// Execute pg_prewarm on all partitions and important indexes (forcing these into Postgres shared_buffers memory)
 	log.Println("prewarming partitions")
-	_, err = p.db.Exec(context.Background(), `select gokoala_prewarm_partitions()`)
+	// pass search index explicitly, the function default only refers to the most recently created search index
+	_, err = p.db.Exec(context.Background(), `select gokoala_prewarm_partitions(search_idx_table := $1::regclass)`, index)
 	if err != nil {
 		return fmt.Errorf("failed optimizing: prewarm function failed: %w", err)
 	}

@@ -304,8 +304,10 @@ GeoPackage and/or PostgreSQL data source.
 This only applies when Features Search (geocoding) is enabled: You can inspect the PostgreSQL buffercache for the search
 index by invoking `select * from gokoala_inspect_buffercache();` in the PostgreSQL database. The search index is
 automatically prewarmed after ETL is done. But in case you want to invoke it manually (one example would be after a
-restart of the database) you can invoke `select gokoala_prewarm_partitions();`. This function defaults to the current
-search index, but this can be overridden when desired.
+restart of the database) you can invoke `select gokoala_prewarm_partitions();`. This function defaults to the most
+recently created search index. When multiple search indexes exist in the same database, pass the search index
+explicitly, e.g. `select gokoala_prewarm_partitions(search_idx_table := 'search_index');`. The same applies to
+`gokoala_inspect_buffercache(search_idx_table := 'search_index')`.
 
 ## Develop
 

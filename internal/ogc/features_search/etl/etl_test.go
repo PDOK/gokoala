@@ -412,6 +412,61 @@ func TestImportGeoPackageNoDuplicates(t *testing.T) {
 	require.ErrorContains(t, err, "ERROR: partition \"search_index_addresses_alpha\" would overlap partition \"search_index_addresses_beta\"")
 }
 
+func TestImportGeoPackageMultipleSearchIndexes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	ctx := context.Background()
+
+	// given
+	dbPort, postgisContainer, err := setupPostgis(ctx, t)
+	if err != nil {
+		t.Error(err)
+	}
+	defer terminateContainer(ctx, t, postgisContainer)
+	dbConn := makeDbConnection(dbPort)
+
+	cfg, err := config.NewConfig(pwd + "/testdata/config.yaml")
+	require.NoError(t, err)
+	collection := cfg.CollectionByID("addresses")
+	require.NotNil(t, collection)
+
+	// when: create all search indexes in the same schema before importing
+	searchIndexes := []string{"search_index", "search_index_2"}
+	for _, searchIndex := range searchIndexes {
+		err = CreateSearchIndex(dbConn, searchIndex, 4326, language.English)
+		require.NoError(t, err)
+	}
+
+	// when: import into each search index (including optimize step)
+	for _, searchIndex := range searchIndexes {
+		err = ImportFile(*collection, searchIndex, uuid.NewString(), pwd+"/testdata/addresses-crs84.gpkg",
+			1000, false, dbConn)
+		require.NoError(t, err)
+	}
+
+	// then: partition indexes are attached to the parent indexes of their own search index
+	db, err := pgx.Connect(ctx, dbConn)
+	require.NoError(t, err)
+	defer db.Close(ctx)
+	for _, searchIndex := range searchIndexes {
+		for _, indexName := range []string{"ts_idx", "geometry_idx", "pre_rank_idx"} {
+			var parentIndex, parentTable string
+			err = db.QueryRow(ctx, `
+				select p.relname, t.relname
+				from pg_inherits h
+				join pg_class p on p.oid = h.inhparent
+				join pg_index x on x.indexrelid = p.oid
+				join pg_class t on t.oid = x.indrelid
+				where h.inhrelid = $1::regclass`, searchIndex+"_addresses_alpha_"+indexName).Scan(&parentIndex, &parentTable)
+			require.NoError(t, err)
+			assert.Equal(t, searchIndex+"_"+indexName, parentIndex)
+			assert.Equal(t, searchIndex, parentTable)
+		}
+	}
+}
+
 func setupPostgis(ctx context.Context, t *testing.T) (network.Port, testcontainers.Container, error) {
 	t.Helper()
 	req := testcontainers.ContainerRequest{
