@@ -40,6 +40,10 @@ type stylesTemplateData struct {
 
 	// All supported projections by GoKoala (for tiles)
 	AllProjections map[string]any
+
+	HasTiles bool
+
+	HasMaps bool
 }
 
 type stylesMetadataTemplateData struct {
@@ -56,44 +60,57 @@ type Styles struct {
 }
 
 func NewStyles(e *engine.Engine) *Styles {
+	styles := &Styles{engine: e}
+
+	// OGC API Styles (with OGC API Tiles) is optional, e.g. when only OGC API Maps is configured.
+	hasTiles := e.Config.OgcAPI.Styles != nil && e.Config.OgcAPI.Tiles != nil
+	data := &stylesTemplateData{
+		HasTiles: hasTiles,
+		HasMaps:  e.Config.OgcAPI.Maps != nil,
+	}
+	if hasTiles {
+		setupTilesStyles(e, styles, data)
+	}
+
+	e.RenderTemplatesWithParams(stylesPath,
+		data,
+		stylesBreadcrumbs,
+		engine.NewTemplateKey(templatesDir+"styles.go.json"),
+		engine.NewTemplateKey(templatesDir+"styles.go.html"),
+		engine.NewTemplateKey(templatesDir+"styles.go.md"))
+
+	e.Router.Get(stylesPath, styles.Styles())
+
+	return styles
+}
+
+// separate function for setting up Tiles Styles, so Tiles and Maps do not get mixed up
+func setupTilesStyles(e *engine.Engine, styles *Styles, data *stylesTemplateData) {
 	// default style must be the first entry in supported styles
 	if e.Config.OgcAPI.Styles.Default != e.Config.OgcAPI.Styles.SupportedStyles[0].ID {
 		log.Fatalf("default style must be first entry in supported styles. '%s' does not match '%s'",
 			e.Config.OgcAPI.Styles.SupportedStyles[0].ID, e.Config.OgcAPI.Styles.Default)
 	}
 
-	allProjections := util.Cast(config.AllTileProjections)
 	supportedProjections := e.Config.OgcAPI.Tiles.GetProjections()
 	if len(supportedProjections) == 0 {
 		log.Fatalf("failed to setup OGC API Styles, no supported projections (SRS) found in OGC API Tiles")
 	}
 	defaultProjection = strings.ToLower(config.AllTileProjections[supportedProjections[0].Srs])
 
-	e.RenderTemplatesWithParams(stylesPath,
-		&stylesTemplateData{defaultProjection, supportedProjections, allProjections},
-		stylesBreadcrumbs,
-		engine.NewTemplateKey(templatesDir+"styles.go.json"),
-		engine.NewTemplateKey(templatesDir+"styles.go.html"),
-		engine.NewTemplateKey(templatesDir+"styles.go.md"))
+	data.DefaultProjection = defaultProjection
+	data.SupportedProjections = supportedProjections
+	data.AllProjections = util.Cast(config.AllTileProjections)
 
 	renderStylesPerProjection(e, supportedProjections)
 
-	styles := &Styles{
-		engine: e,
-	}
-	e.Router.Get(stylesPath, styles.Styles())
 	e.Router.Get(stylesPath+"/{style}", styles.Style())
 	e.Router.Get(stylesPath+"/{style}/metadata", styles.Metadata())
 	e.Router.Get(stylesPath+"/{style}/legend", styles.Legend())
 
-	if res := e.Config.Resources; e.Config.Resources != nil {
-		if res != nil && res.Directory != nil && *res.Directory != "" {
-			resourcesPath := *res.Directory
-			styles.localResourcesHandler = http.FileServer(http.Dir(resourcesPath))
-		}
+	if res := e.Config.Resources; res != nil && res.Directory != nil && *res.Directory != "" {
+		styles.localResourcesHandler = http.FileServer(http.Dir(*res.Directory))
 	}
-
-	return styles
 }
 
 func (s *Styles) Styles() http.HandlerFunc {
