@@ -273,6 +273,13 @@ func (fas FeaturesAndSearchConfig) FeatureCollections() FeaturesCollections {
 	return nil
 }
 
+func (fas FeaturesAndSearchConfig) SearchIndexName() string {
+	if fas.search != nil {
+		return fas.search.SearchSettings.IndexName
+	}
+	return ""
+}
+
 func (fas FeaturesAndSearchConfig) MaxDecimals() int {
 	if fas.search != nil {
 		return fas.search.MaxDecimals

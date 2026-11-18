@@ -143,13 +143,15 @@ func (s *Search) searchAsJSON(w http.ResponseWriter, r *http.Request, format str
 
 	// Perform actual search
 	fc, err := s.datasource.SearchFeaturesAcrossCollections(r.Context(), ds.FeaturesSearchCriteria{
-		SearchQuery: *searchQuery,
-		Settings:    s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings,
-		Limit:       limit,
-		InputSRID:   bboxSRID,
-		OutputSRID:  outputSRID,
-		Bbox:        bbox,
-	}, s.axisOrderBySRID[outputSRID.GetOrDefault()], collections)
+		SearchQuery:     *searchQuery,
+		Settings:        s.engine.Config.OgcAPI.FeaturesSearch.SearchSettings,
+		Limit:           limit,
+		InputSRID:       bboxSRID,
+		InputAxisOrder:  s.axisOrderBySRID[bboxSRID.GetOrDefault()],
+		OutputSRID:      outputSRID,
+		OutputAxisOrder: s.axisOrderBySRID[outputSRID.GetOrDefault()],
+		Bbox:            bbox,
+	}, collections)
 	if err != nil {
 		handleQueryError(w, err)
 		return

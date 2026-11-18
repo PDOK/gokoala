@@ -48,6 +48,7 @@ type Table struct {
 	Name               string
 	Type               geospatial.CollectionType
 	GeometryColumnName string
+	GeometryColumnSRID domain.SRID
 	GeometryType       string
 
 	Schema *domain.Schema // required

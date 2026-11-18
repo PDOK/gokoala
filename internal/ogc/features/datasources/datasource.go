@@ -29,7 +29,7 @@ type Datasource interface {
 
 	// SearchFeaturesAcrossCollections search features in one or more collections. Collections can be located
 	// in this dataset or in other datasets.
-	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, axisOrder domain.AxisOrder, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
+	SearchFeaturesAcrossCollections(ctx context.Context, criteria FeaturesSearchCriteria, collections searchdomain.CollectionsWithParams) (*domain.FeatureCollection, error)
 
 	// GetSchema returns the schema (fields, data types, descriptions, etc.) of the table associated with the given collection.
 	// Along with configured queryables (= fields that can be used in filters), optionally enriched with allowed values.
@@ -94,8 +94,10 @@ type FeaturesSearchCriteria struct {
 	Limit int
 
 	// multiple projections support (OAF part 2)
-	InputSRID  domain.SRID // derived from bbox param when available, or WGS84 as default
-	OutputSRID domain.SRID // derived from crs param when available, or WGS84 as default
+	InputSRID       domain.SRID // derived from bbox param when available, or WGS84 as default
+	InputAxisOrder  domain.AxisOrder
+	OutputSRID      domain.SRID // derived from crs param when available, or WGS84 as default
+	OutputAxisOrder domain.AxisOrder
 
 	// filtering by bounding box (OAF part 1)
 	Bbox *geom.Bounds
