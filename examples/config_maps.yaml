@@ -63,6 +63,7 @@ ogcApi:
                 title: Gemeentegebied
                 # style name as advertised by the WMS service
                 wmsStyle: Gemeentegebied
+                legendUrl: Gemeentegebied/Gemeentegebied.png
       - id: provinciegebied
         metadata:
           title: Provinciegebied
@@ -90,6 +91,7 @@ ogcApi:
                 title: Provinciegebied
                 # style name as advertised by the WMS service
                 wmsStyle: Provinciegebied
+                legendUrl: Provinciegebied/Provinciegebied.png
       - id: landgebied
         metadata:
           title: Landgebied
@@ -117,3 +119,4 @@ ogcApi:
                 title: Landgebied
                 # style name as advertised by the WMS service
                 wmsStyle: Landgebied
+                legendUrl: Landgebied/Landgebied.png

@@ -218,6 +218,9 @@ type MapStyle struct {
 
 	// Readable title of the style.
 	Title string `yaml:"title" json:"title" validate:"required"`
+
+	// Legend URL suffix
+	LegendURL string `yaml:"legendUrl" json:"legendUrl"`
 }
 
 func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
