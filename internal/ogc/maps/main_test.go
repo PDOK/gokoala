@@ -332,7 +332,12 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 		BaseURL:            config.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 		OgcAPI: config.OgcAPI{
 			Maps: &config.OgcAPIMaps{
-				WMSServer: &config.URL{URL: wms},
+				Backend: &config.MapsBackend{
+					Type: "externalWms",
+					ExternalWMS: &config.ExternalWMSBackend{
+						URL: &config.URL{URL: wms},
+					},
+				},
 				MaxWidth:  4000,
 				MaxHeight: 4000,
 				DefaultMap: config.DefaultMap{
@@ -351,7 +356,7 @@ func newTestEngine(t *testing.T, wmsURL string) *engine.Engine {
 							{
 								ID:     "layer1",
 								Name:   "layer1",
-								Styles: []config.MapStyle{{ID: testStyle, Title: "Test style", WMSStyle: "default"}},
+								Styles: []config.MapStyle{{ID: testStyle, Title: "Test style", StyleName: "default"}},
 							},
 						},
 					},

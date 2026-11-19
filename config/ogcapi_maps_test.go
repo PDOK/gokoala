@@ -86,8 +86,8 @@ func TestMapStyle_TitleRequired(t *testing.T) {
 	v := validator.New()
 	require.NoError(t, v.RegisterValidation(lowercaseID, LowercaseID))
 
-	require.Error(t, v.Struct(MapStyle{ID: "a", WMSStyle: "a"}))
-	require.NoError(t, v.Struct(MapStyle{ID: "a", WMSStyle: "a", Title: "A"}))
+	require.Error(t, v.Struct(MapStyle{ID: "a", StyleName: "a"}))
+	require.NoError(t, v.Struct(MapStyle{ID: "a", StyleName: "a", Title: "A"}))
 }
 
 func TestValidateMapCollections_AmbiguousStyleIDs(t *testing.T) {

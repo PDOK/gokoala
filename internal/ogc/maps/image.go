@@ -34,7 +34,7 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 		return
 	}
 
-	target := *mapsConfig.WMSServer.URL
+	target := *mapsConfig.Backend.ExternalWMS.URL.URL
 	params := target.Query()
 	getMapParams := getMapRequest.ToQueryParameters()
 	for key, values := range getMapParams {
