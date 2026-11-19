@@ -340,7 +340,7 @@ func Test_newOpenAPI_stylesPaths(t *testing.T) {
 				URL: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
 			},
 		},
-		MaxWidth:  6000, MaxHeight: 3000,
+		MaxWidth: 6000, MaxHeight: 3000,
 		DefaultMap: gokoalaconfig.DefaultMap{
 			CRS: "EPSG:28992", Width: 1024, Height: 768,
 			Bbox: []string{"10000", "300000", "280000", "620000"},
