@@ -223,8 +223,8 @@ func TestStyles_JSON(t *testing.T) {
 						types = append(types, l.Type)
 						titles = append(titles, l.Title)
 					}
-					assert.Equal(t, []string{"image/png", "image/jpeg", "text/html"}, types, s.ID)
-					assert.Equal(t, []string{s.Title + " as PNG", s.Title + " as JPEG", s.Title + " as HTML"}, titles, s.ID)
+					assert.Equal(t, []string{"image/png", "image/jpeg", "text/html", "image/svg+xml"}, types, s.ID)
+					assert.Equal(t, []string{s.Title + " as PNG", s.Title + " as JPEG", s.Title + " as HTML", "Legend for " + s.Title}, titles, s.ID)
 				}
 			}
 			assert.Equal(t, tt.wantIDs, gotIDs)
@@ -250,10 +250,10 @@ func newTestStylesEngine(t *testing.T, withTiles, withMaps, mapsNoStyles bool) *
 		e.Config.OgcAPI.Maps = testMapsConfig()
 		e.Config.OgcAPI.Maps.Collections = []config.MapsCollection{
 			{ID: "gemeenten", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "geannoteerd", Title: "Met labels", WMSStyle: "default"},
+				{ID: "geannoteerd", Title: "Met labels", WMSStyle: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 			{ID: "province", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "standaard", Title: "Standaard", WMSStyle: "default"},
+				{ID: "standaard", Title: "Standaard", WMSStyle: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 		}
 		if mapsNoStyles {

@@ -300,6 +300,9 @@ func validateLocalPaths(config *Config) error {
 	if config.OgcAPI.Styles != nil && !isExistingLocalDir(config.OgcAPI.Styles.StylesDir) {
 		return errors.New("stylesDir should be an existing directory: " + config.OgcAPI.Styles.StylesDir)
 	}
+	if maps := config.OgcAPI.Maps; maps != nil {
+		return validateMapLegendPaths(maps.Collections)
+	}
 
 	return nil
 }

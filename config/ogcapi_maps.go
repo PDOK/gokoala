@@ -4,6 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"mime"
+	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -219,8 +222,15 @@ type MapStyle struct {
 	// Readable title of the style.
 	Title string `yaml:"title" json:"title" validate:"required"`
 
-	// Legend URL suffix
-	LegendURL string `yaml:"legendUrl" json:"legendUrl"`
+	// Path to the legend file, relative to the working directory if not absolute.
+	LegendPath string `yaml:"legendPath" json:"legendPath" validate:"required"`
+}
+
+func (s MapStyle) LegendMediaType() string {
+	if mediaType := mime.TypeByExtension(filepath.Ext(s.LegendPath)); mediaType != "" {
+		return mediaType
+	}
+	return "application/octet-stream"
 }
 
 func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
@@ -375,5 +385,24 @@ func validateMMPerPixel(mmPerPixel string) error {
 		return fmt.Errorf("mmPerPixel in default map must be finite and positive, got '%s'", mmPerPixel)
 	}
 
+	return nil
+}
+
+func validateMapLegendPaths(collections MapsCollections) error {
+	for _, collection := range collections {
+		for _, layer := range collection.Layers {
+			for _, style := range layer.Styles {
+				info, err := os.Stat(style.LegendPath)
+				if err != nil {
+					return fmt.Errorf("legendPath for maps collection %q, layer %q, style %q: %w",
+						collection.ID, layer.ID, style.ID, err)
+				}
+				if !info.Mode().IsRegular() {
+					return fmt.Errorf("legendPath for maps collection %q, layer %q, style %q: %q is not a regular file",
+						collection.ID, layer.ID, style.ID, style.LegendPath)
+				}
+			}
+		}
+	}
 	return nil
 }

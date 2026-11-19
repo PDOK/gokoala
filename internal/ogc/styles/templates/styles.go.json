@@ -93,7 +93,7 @@
         },
 	{
           "rel": "https://www.opengis.net/def/rel/ogc/1.0/legend",
-	  "type": "image/png",
+	  "type": {{ mustToRawJson $style.LegendMediaType }},
 	  "title": "Legend for {{ $style.Title }}",
 	  "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/legend"
 	}
