@@ -51,8 +51,9 @@
           {{block "problems" . }}{{end}}
         }
       }
-    },
-    "/styles/{styleId}": {
+    }
+    {{ if .Config.OgcAPI.Styles }}
+    ,"/styles/{styleId}": {
       "get": {
         "tags": [
           "Styles"
@@ -155,6 +156,7 @@
         }
       }
     }
+    {{ end }}
   },
   "components": {
     "parameters": {

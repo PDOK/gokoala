@@ -58,7 +58,7 @@
       "href": "{{ .Config.BaseURL }}/resources/{{ .Config.Thumbnail }}"
     }
     {{ end }}
-    {{ if .Config.OgcAPI.Styles }}
+    {{ if or .Config.OgcAPI.Styles .Config.OgcAPI.Maps }}
     ,
     {
       "rel": "http://www.opengis.net/def/rel/ogc/1.0/styles",

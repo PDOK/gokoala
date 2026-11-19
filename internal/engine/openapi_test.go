@@ -149,7 +149,7 @@ func Test_newOpenAPI(t *testing.T) {
 								{
 									ID: "map1",
 									Layers: []gokoalaconfig.MapLayer{
-										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", StyleName: "default"}}},
+										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", StyleName: "default"}}},
 									},
 									SupportedSrs: []gokoalaconfig.MapsSupportedSrs{{Srs: "EPSG:28992"}},
 								},
@@ -326,6 +326,68 @@ func Test_newOpenAPI(t *testing.T) {
 			for _, expectedStr := range test.expectedStringsInOpenAPISpec {
 				assert.Contains(t, string(openAPI.SpecJSON), expectedStr,
 					"\"%s\" not found in spec: %s", expectedStr, string(openAPI.SpecJSON))
+			}
+		})
+	}
+}
+
+func Test_newOpenAPI_stylesPaths(t *testing.T) {
+	baseURL := gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}}
+	maps := &gokoalaconfig.OgcAPIMaps{
+		Backend: &gokoalaconfig.MapsBackend{
+			Type: "externalWms",
+			ExternalWMS: &gokoalaconfig.ExternalWMSBackend{
+				URL: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+			},
+		},
+		MaxWidth:  6000, MaxHeight: 3000,
+		DefaultMap: gokoalaconfig.DefaultMap{
+			CRS: "EPSG:28992", Width: 1024, Height: 768,
+			Bbox: []string{"10000", "300000", "280000", "620000"},
+		},
+		Collections: []gokoalaconfig.MapsCollection{{
+			ID:           "map1",
+			Layers:       []gokoalaconfig.MapLayer{{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", StyleName: "default"}}}},
+			SupportedSrs: []gokoalaconfig.MapsSupportedSrs{{Srs: "EPSG:28992"}},
+		}},
+	}
+	tests := []struct {
+		name      string
+		ogcAPI    gokoalaconfig.OgcAPI
+		wantPaths []string
+		noPaths   []string
+	}{
+		{
+			name:      "Styles: all style paths",
+			ogcAPI:    gokoalaconfig.OgcAPI{Styles: &gokoalaconfig.OgcAPIStyles{}},
+			wantPaths: []string{"/styles", "/styles/{styleId}", "/styles/{styleId}/metadata", "/styles/{styleId}/legend"},
+		},
+		{
+			name:      "Maps only: just the global styles endpoint",
+			ogcAPI:    gokoalaconfig.OgcAPI{Maps: maps},
+			wantPaths: []string{"/styles"},
+			noPaths:   []string{"/styles/{styleId}", "/styles/{styleId}/metadata", "/styles/{styleId}/legend"},
+		},
+		{
+			name:    "No styles and no maps: no style paths",
+			ogcAPI:  gokoalaconfig.OgcAPI{},
+			noPaths: []string{"/styles", "/styles/{styleId}"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			openAPI := newOpenAPI(&gokoalaconfig.Config{
+				Version: "2.3.0", Title: "Test API", Abstract: "Test API description",
+				BaseURL: baseURL, OgcAPI: tt.ogcAPI,
+			}, nil, nil)
+			require.NotNil(t, openAPI)
+
+			paths := openAPI.spec.Paths.Map()
+			for _, p := range tt.wantPaths {
+				assert.Contains(t, paths, p)
+			}
+			for _, p := range tt.noPaths {
+				assert.NotContains(t, paths, p)
 			}
 		})
 	}

@@ -23,8 +23,8 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	if engine.Config.OgcAPI.Tiles != nil {
 		tiles.NewTiles(engine)
 	}
-	// OGC Styles API
-	if engine.Config.OgcAPI.Styles != nil {
+	// OGC Styles API or when it's only OGC Maps API it needs a /styles endpoint as well
+	if engine.Config.OgcAPI.Styles != nil || engine.Config.OgcAPI.Maps != nil {
 		styles.NewStyles(engine)
 	}
 	// OGC Features API

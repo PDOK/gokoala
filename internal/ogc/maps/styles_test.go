@@ -12,9 +12,10 @@ import (
 const relMap = "https://www.opengis.net/def/rel/ogc/1.0/map"
 
 type stylesLink struct {
-	Rel  string `json:"rel"`
-	Type string `json:"type"`
-	Href string `json:"href"`
+	Rel   string `json:"rel"`
+	Type  string `json:"type"`
+	Href  string `json:"href"`
+	Title string `json:"title"`
 }
 
 type stylesResponse struct {
@@ -38,6 +39,7 @@ func TestStylesDescLinks(t *testing.T) {
 	assert.Equal(t, testStyle, stylesRes.Default)
 	require.Len(t, stylesRes.Styles, 1)
 	assert.Equal(t, testStyle, stylesRes.Styles[0].ID)
+	assert.Equal(t, "Test style", stylesRes.Styles[0].Title)
 
 	var mapLinks []stylesLink
 	for _, link := range stylesRes.Styles[0].Links {
@@ -49,6 +51,7 @@ func TestStylesDescLinks(t *testing.T) {
 	for _, link := range mapLinks {
 		assert.Contains(t, link.Href, "/collections/"+testCollection+"/styles/"+testStyle+"/map")
 		assert.NotEmpty(t, link.Type)
+		assert.Contains(t, link.Title, "Test style as ")
 	}
 }
 

@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
 {
-  {{ if .Config.OgcAPI.Styles }}
+  {{ if or .Config.OgcAPI.Styles .Config.OgcAPI.Maps }}
   {{ $baseUrl := .Config.BaseURL }}
   {{ $supportedSrs := .Params.SupportedProjections }}
   {{ $projections := .Params.AllProjections }}
@@ -18,12 +18,15 @@
       "href": "{{ $baseUrl }}/styles?f=html"
     }
   ],
+  {{ if .Params.HasTiles }}
   "default": "{{ .Config.OgcAPI.Styles.Default }}",
+  {{ end }}
   "styles": [
+    {{ $hasStyle := false }}
+    {{ if .Params.HasTiles }}
     {{ range $st_index, $style := .Config.OgcAPI.Styles.SupportedStyles }}
-    {{ if $st_index }},{{ end }}
     {{ range $srs_index, $srs := $supportedSrs }}
-    {{ if $srs_index }},{{ end }}
+    {{ if $hasStyle }},{{ end }}{{ $hasStyle = true }}
     {
       "id": "{{ $style.ID }}__{{ get $projections (index $srs).Srs | lower }}",
       "title": "{{ $style.Title }} ({{ get $projections (index $srs).Srs }})",
@@ -59,6 +62,38 @@
         {{ end }}
       ]
     }
+    {{ end }}
+    {{ end }}
+    {{ end }}
+    {{ if .Params.HasMaps }}
+    {{ range $coll := .Config.OgcAPI.Maps.Collections }}
+    {{ range $style := $coll.GetStyles }}
+    {{ if $hasStyle }},{{ end }}{{ $hasStyle = true }}
+    {
+      "id": {{ mustToRawJson ($.Config.MapsStyleID $coll.ID $style.ID) }},
+      "title": {{ mustToRawJson $style.Title }},
+      "links": [
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "image/png",
+          "title": {{ mustToRawJson (printf "%s as PNG" $style.Title) }},
+          "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=png"
+        },
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "image/jpeg",
+          "title": {{ mustToRawJson (printf "%s as JPEG" $style.Title) }},
+          "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=jpeg"
+        },
+        {
+          "rel": "https://www.opengis.net/def/rel/ogc/1.0/map",
+          "type": "text/html",
+          "title": {{ mustToRawJson (printf "%s as HTML" $style.Title) }},
+          "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=html"
+        }
+      ]
+    }
+    {{ end }}
     {{ end }}
     {{ end }}
   ]

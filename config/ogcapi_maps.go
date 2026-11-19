@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -168,6 +169,36 @@ func (cm MapsCollection) GetStyle(styleID string) *MapStyle {
 	return nil
 }
 
+func (cm MapsCollection) GetStyles() []MapStyle {
+	if len(cm.Layers) == 0 {
+		return nil
+	}
+
+	var result []MapStyle
+	for _, style := range cm.Layers[0].Styles {
+		if slices.ContainsFunc(result, func(s MapStyle) bool { return s.ID == style.ID }) {
+			continue
+		}
+		sharedByAll := true
+		for _, layer := range cm.Layers[1:] {
+			if !slices.ContainsFunc(layer.Styles, func(s MapStyle) bool { return s.ID == style.ID }) {
+				sharedByAll = false
+				break
+			}
+		}
+		if sharedByAll {
+			result = append(result, style)
+		}
+	}
+
+	return result
+}
+
+// MapsStyleID returns the globally unique ID of a Maps style, as advertised on the global /styles endpoint.
+func (c *Config) MapsStyleID(collectionID, styleID string) string {
+	return strings.ToLower(c.ServiceIdentifier) + "_" + collectionID + "_" + styleID
+}
+
 // +kubebuilder:object:generate=true
 type MapsSupportedSrs struct {
 	// Supported coordinate reference system.
@@ -201,12 +232,16 @@ type MapStyle struct {
 
 	// Style name advertised by the backend service.
 	StyleName string `yaml:"styleName" json:"styleName" validate:"required"`
+
+	// Readable title of the style.
+	Title string `yaml:"title" json:"title" validate:"required"`
 }
 
 func validateMapCollections(collections []MapsCollection, defaultCRS string) error {
 	var errMessages []string
 	defaultCode, defaultErr := parseMapEPSGCode(defaultCRS)
 	collectionIDs := make(map[string]struct{})
+	globalStyleIDs := make(map[string]string)
 	for _, collection := range collections {
 		if _, exists := collectionIDs[collection.ID]; exists {
 			errMessages = append(errMessages, fmt.Sprintf("duplicate maps collection ID '%s'", collection.ID))
@@ -243,6 +278,8 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 				styleIDs[style.ID] = struct{}{}
 			}
 		}
+
+		errMessages = append(errMessages, ambiguousStyleIDs(collection, globalStyleIDs)...)
 	}
 
 	if len(errMessages) > 0 {
@@ -250,6 +287,20 @@ func validateMapCollections(collections []MapsCollection, defaultCRS string) err
 	}
 
 	return nil
+}
+
+// ambiguousStyleIDs checks for cases where ids a_b + _c and a_ + b_c would both result in a_b_c..
+func ambiguousStyleIDs(collection MapsCollection, seen map[string]string) []string {
+	var errMessages []string
+	for _, style := range collection.GetStyles() {
+		joined, pair := collection.ID+"_"+style.ID, collection.ID+"/"+style.ID
+		if previous, exists := seen[joined]; exists {
+			errMessages = append(errMessages, fmt.Sprintf("ambiguous global style ID '%s': '%s' clashes with '%s'", joined, previous, pair))
+		}
+		seen[joined] = pair
+	}
+
+	return errMessages
 }
 
 func validateMapDefaults(dm DefaultMap) error {

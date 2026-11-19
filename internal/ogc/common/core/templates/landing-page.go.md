@@ -34,7 +34,7 @@
 {{ if and .Config.OgcAPI.Tiles .Config.OgcAPI.Tiles.DatasetTiles -}}
 - [{{ i18n "Tiles" }}]({{ .Config.BaseURL }}/tiles): OGC API Tiles supported by this API.
 {{- end }}
-{{ if .Config.OgcAPI.Styles -}}
+{{ if or .Config.OgcAPI.Styles .Config.OgcAPI.Maps -}}
 - [{{ i18n "Styles" }}]({{ .Config.BaseURL }}/styles): OGC API Styles supported by this API.
 {{- end }}
 {{ if .Config.OgcAPI.Tiles -}}

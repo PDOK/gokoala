@@ -2,7 +2,7 @@
 version: 1.0.0
 title: Bestuurlijke Gebieden
 # shortened title, used in breadcrumb path
-serviceIdentifier: BestuurlijkeGebieden
+serviceIdentifier: bestuurlijkegebieden
 abstract: >-
   Overzicht van de bestuurlijke indeling van Nederland in gemeenten en provincies alsmede de rijksgrens. Gegevens zijn afgeleid uit de Basisregistratie Kadaster (BRK).
 # just a dummy picture, but you can put an actual thumbnail here
@@ -62,6 +62,7 @@ ogcApi:
             title: Gemeentegebied
             styles:
               - id: default
+                title: Gemeentegebied
                 # style name as advertised by the backend service
                 styleName: Gemeentegebied
       - id: provinciegebied
@@ -88,6 +89,7 @@ ogcApi:
             title: Provinciegebied
             styles:
               - id: default
+                title: Provinciegebied
                 # style name as advertised by the backend service
                 styleName: Provinciegebied
       - id: landgebied
@@ -114,5 +116,6 @@ ogcApi:
             title: Landgebied
             styles:
               - id: default
+                title: Landgebied
                 # style name as advertised by the backend service
                 styleName: Landgebied

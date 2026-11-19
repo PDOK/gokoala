@@ -183,7 +183,7 @@
     </div>
     {{ end }}
 
-    {{ if .Config.OgcAPI.Styles }}
+    {{ if or .Config.OgcAPI.Styles .Config.OgcAPI.Maps }}
     <div class="col-md-4 col-sm-12">
         <div class="card h-100">
             <h2 class="card-header h5">

@@ -40,8 +40,8 @@ var mapsConfig = &config.OgcAPIMaps{
 					ID:   "layer1",
 					Name: "layer1",
 					Styles: []config.MapStyle{
-						{ID: "default", StyleName: "default"},
-						{ID: "terrain", StyleName: "terrain"},
+						{ID: "default", Title: "Default", StyleName: "default"},
+						{ID: "terrain", Title: "Terrain", StyleName: "terrain"},
 					},
 				},
 			},
