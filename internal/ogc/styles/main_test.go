@@ -282,7 +282,7 @@ func TestStyles_Markdown(t *testing.T) {
 		{
 			name:        "maps only",
 			withMaps:    true,
-			contains:    []string{"Available Styles", "### Met labels", "min_gemeenten_geannoteerd", "### Standaard", "min_province_standaard", "/collections/gemeenten/styles/geannoteerd/map?f=png", "/map?f=jpeg", "/map?f=html"},
+			contains:    []string{"Available Styles", "### Met labels", "min_gemeenten_geannoteerd", "### Standaard", "min_province_standaard", "/collections/gemeenten/styles/geannoteerd/map?f=png", "/map?f=jpeg", "/map?f=html", "/collections/gemeenten/styles/geannoteerd/legend"},
 			notContains: []string{"Mapbox style"},
 		},
 		{
@@ -338,15 +338,16 @@ func TestStyles_HTML(t *testing.T) {
 				`data-kind="mapbox" data-url="styles/default__webmercatorquad" data-metadata="styles/default__webmercatorquad/metadata" data-format="Mapbox style" data-proj="WebMercatorQuad" data-viewer="tiles">Test style (WebMercatorQuad)`,
 			},
 			contains:    []string{`id="styles-viewer"`, "<app-vectortile-view"},
-			notContains: []string{`data-kind="map"`},
+			notContains: []string{`data-kind="map"`, `id="legend-row"`},
 		},
 		{
 			name:     "maps only",
 			withMaps: true,
 			wantOptions: []string{
-				`data-kind="map" data-url="collections/gemeenten/styles/geannoteerd/map" data-metadata="collections/gemeenten/styles" data-format="PNG/JPEG">Met labels`,
-				`data-kind="map" data-url="collections/province/styles/standaard/map" data-metadata="collections/province/styles" data-format="PNG/JPEG">Standaard`,
+				`data-kind="map" data-url="collections/gemeenten/styles/geannoteerd/map" data-legend="collections/gemeenten/styles/geannoteerd/legend" data-metadata="collections/gemeenten/styles" data-format="PNG/JPEG">Met labels`,
+				`data-kind="map" data-url="collections/province/styles/standaard/map" data-legend="collections/province/styles/standaard/legend" data-metadata="collections/province/styles" data-format="PNG/JPEG">Standaard`,
 			},
+			contains:    []string{`id="legend-row"`},
 			notContains: []string{`data-kind="mapbox"`, "data-viewer", `id="styles-viewer"`, "<app-vectortile-view"},
 		},
 		{
@@ -356,7 +357,7 @@ func TestStyles_HTML(t *testing.T) {
 			wantOptions: []string{
 				"Test style (NetherlandsRDNewQuad)", "Test style (WebMercatorQuad)", "Met labels", "Standaard",
 			},
-			contains: []string{`id="styles-viewer"`},
+			contains: []string{`id="styles-viewer"`, `id="legend-row"`, `data-legend="collections/gemeenten/styles/geannoteerd/legend"`},
 		},
 		{
 			name:         "maps collection without styles",

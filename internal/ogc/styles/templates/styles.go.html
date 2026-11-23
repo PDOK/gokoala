@@ -54,6 +54,7 @@
                 {{ range $style := $coll.GetStyles }}
                 <option data-kind="map"
                         data-url="collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map"
+                        data-legend="collections/{{ $coll.ID }}/styles/{{ $style.ID }}/legend"
                         data-metadata="collections/{{ $coll.ID }}/styles"
                         data-format="PNG/JPEG">{{ $style.Title }}</option>
                 {{ end }}
@@ -88,6 +89,16 @@
               </a>
             </td>
           </tr>
+          {{ if .Params.HasMaps }}
+          <tr id="legend-row" hidden>
+            <td class="w-auto text-nowrap fw-bold">
+              {{ i18n "Legend" }}
+            </td>
+            <td class="w-auto px-2">
+              <a id="href-legend" href="#"></a>
+            </td>
+          </tr>
+          {{ end }}
         </tbody>
       </table>
     </div>
@@ -112,10 +123,19 @@
       const selected = event.target.selectedOptions[0].dataset;
       const urlHref = document.getElementById('href-url');
       const metadataHref = document.getElementById('href-metadata');
+      const legendRow = document.getElementById('legend-row');
       urlHref.textContent = '{{ $baseUrl }}/' + selected.url;
       urlHref.setAttribute('href', selected.url);
       document.getElementById('style-format').textContent = selected.format;
       metadataHref.setAttribute('href', selected.metadata);
+      if (legendRow) {
+        if (selected.legend) {
+          const legendHref = document.getElementById('href-legend');
+          legendHref.textContent = '{{ $baseUrl }}/' + selected.legend;
+          legendHref.setAttribute('href', selected.legend);
+        }
+        legendRow.hidden = !selected.legend;
+      }
 
       // viewer is only available for tiles
       const viewer = document.getElementById('styles-vectortile-view')
