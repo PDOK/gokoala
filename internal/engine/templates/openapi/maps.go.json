@@ -105,6 +105,56 @@
 					{{block "problems" $ }}{{end}}
 				}
 			}
+		},
+		{{- $collId := $coll.ID }}
+		"/collections/{{ $collId }}/styles/{styleId}/legend": {
+			"get": {
+				"tags": [
+					"Maps"
+				],
+				"summary": "Retrieve the legend for a specified style",
+				"operationId": "{{ $collId }}.collection.style.getLegend",
+				"parameters": [
+					{"$ref": "#/components/parameters/styleId-collection"}
+				],
+				"responses": {
+					"200": {
+						"description": "A legend image returned as a response.",
+						"content": {
+							"image/png": {
+								"schema": {"type": "string", "format": "binary"}
+							}
+						}
+					},
+					"403": {
+						"description": "Forbidden: you do not have access to the created resource.",
+						"content": {
+							"text/plain": {
+								"schema": {"type": "string"}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found: The requested resource does not exist on the server. For example, a path parameter had an incorrect value.",
+						"content": {
+							"application/problem+json": {
+								"schema": {"$ref": "#/components/schemas/exception"}
+							},
+							"text/plain": {
+								"schema": {"type": "string"}
+							}
+						}
+					},
+					"500": {
+						"description": "Internal server error: An unexpected server error occurred.",
+						"content": {
+							"text/plain": {
+								"schema": {"type": "string"}
+							}
+						}
+					}
+				}
+			}
 		}
 		{{- end }}
 		{{- end }}
