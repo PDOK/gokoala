@@ -94,7 +94,7 @@
 	{
           "rel": "https://www.opengis.net/def/rel/ogc/1.0/legend",
 	  "type": {{ mustToRawJson $style.LegendMediaType }},
-	  "title": "Legend for {{ $style.Title }}",
+	  "title": {{ mustToRawJson (printf "Legend for %s" $style.Title) }},
 	  "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/legend"
 	}
       ]
