@@ -42,7 +42,7 @@ type ManagedWMSBackend struct {
 
 	// CRS of the source data
 	// +optional
-	DataEPSG string `json:"dataEPSG"`
+	DataEPSG string `json:"dataEPSG"` //nolint:tagliatelle
 
 	// Optional WMS title override. Defaults to the OGC API title.
 	Title string `json:"title,omitempty"`
