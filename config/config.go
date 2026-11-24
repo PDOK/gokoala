@@ -338,6 +338,12 @@ func isExistingLocalDir(path string) bool {
 	return err == nil && fileInfo.IsDir()
 }
 
+func isExistingLocalFile(path string) bool {
+	fileInfo, err := os.Stat(path)
+
+	return err == nil && fileInfo.Mode().IsRegular()
+}
+
 func formatValidationErr(err error) error {
 	var ive *validator.InvalidValidationError
 	if ok := errors.Is(err, ive); ok {

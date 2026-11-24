@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"mime"
-	"os"
 	"path/filepath"
 	"slices"
 	"strconv"
@@ -409,14 +408,8 @@ func validateMapLegendPaths(collections MapsCollections) error {
 	for _, collection := range collections {
 		for _, layer := range collection.Layers {
 			for _, style := range layer.Styles {
-				info, err := os.Stat(style.LegendPath)
-				if err != nil {
-					return fmt.Errorf("legendPath for maps collection %q, layer %q, style %q: %w",
-						collection.ID, layer.ID, style.ID, err)
-				}
-				if !info.Mode().IsRegular() {
-					return fmt.Errorf("legendPath for maps collection %q, layer %q, style %q: %q is not a regular file",
-						collection.ID, layer.ID, style.ID, style.LegendPath)
+				if !isExistingLocalFile(style.LegendPath) {
+					return fmt.Errorf("legendPath for maps collection %q, layer %q, style %q should be an existing file: %q", collection.ID, layer.ID, style.ID, style.LegendPath)
 				}
 			}
 		}

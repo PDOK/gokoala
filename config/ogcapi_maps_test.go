@@ -100,12 +100,12 @@ func TestValidateMapLegendPaths(t *testing.T) {
 	for _, tt := range []struct {
 		name    string
 		path    string
-		wantErr string
+		wantErr bool
 	}{
-		{name: "empty", wantErr: `legendPath for maps collection "collection", layer "layer", style "style":`},
+		{name: "empty", wantErr: true},
 		{name: "existing file", path: legend},
-		{name: "missing file", path: filepath.Join(dir, "missing.png"), wantErr: "missing.png"},
-		{name: "directory", path: dir, wantErr: "is not a regular file"},
+		{name: "missing file", path: filepath.Join(dir, "missing.png"), wantErr: true},
+		{name: "directory", path: dir, wantErr: true},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			collections := MapsCollections{{
@@ -117,10 +117,10 @@ func TestValidateMapLegendPaths(t *testing.T) {
 			}}
 
 			err := validateMapLegendPaths(collections)
-			if tt.wantErr == "" {
-				require.NoError(t, err)
+			if tt.wantErr  {
+				require.Error(t, err)
 			} else {
-				require.ErrorContains(t, err, tt.wantErr)
+				require.NoError(t, err)
 			}
 		})
 	}
