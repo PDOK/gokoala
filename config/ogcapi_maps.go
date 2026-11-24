@@ -226,7 +226,7 @@ type MapStyle struct {
 	LegendPath string `yaml:"legendPath" json:"legendPath" validate:"required"`
 }
 
-func (s MapStyle) LegendMediaType() string {
+func (s *MapStyle) LegendMediaType() string {
 	if mediaType := mime.TypeByExtension(filepath.Ext(s.LegendPath)); mediaType != "" {
 		return mediaType
 	}
