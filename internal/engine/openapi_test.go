@@ -133,8 +133,13 @@ func Test_newOpenAPI(t *testing.T) {
 					BaseURL:  gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}},
 					OgcAPI: gokoalaconfig.OgcAPI{
 						Maps: &gokoalaconfig.OgcAPIMaps{
-							WMSServer: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
-							MaxWidth:  6000, MaxHeight: 3000,
+							Backend: &gokoalaconfig.MapsBackend{
+								Type: "externalWms",
+								ExternalWMS: &gokoalaconfig.ExternalWMSBackend{
+									URL: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+								},
+							},
+							MaxWidth: 6000, MaxHeight: 3000,
 							DefaultMap: gokoalaconfig.DefaultMap{
 								CRS:   "EPSG:28992",
 								Width: 1024, Height: 768,
@@ -144,7 +149,7 @@ func Test_newOpenAPI(t *testing.T) {
 								{
 									ID: "map1",
 									Layers: []gokoalaconfig.MapLayer{
-										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", WMSStyle: "default"}}},
+										{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", StyleName: "default"}}},
 									},
 									SupportedSrs: []gokoalaconfig.MapsSupportedSrs{{Srs: "EPSG:28992"}},
 								},
@@ -241,8 +246,13 @@ func Test_newOpenAPI(t *testing.T) {
 							},
 						},
 						Maps: &gokoalaconfig.OgcAPIMaps{
-							WMSServer: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
-							MaxWidth:  4000, MaxHeight: 4000,
+							Backend: &gokoalaconfig.MapsBackend{
+								Type: "externalWms",
+								ExternalWMS: &gokoalaconfig.ExternalWMSBackend{
+									URL: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+								},
+							},
+							MaxWidth: 4000, MaxHeight: 4000,
 							DefaultMap: gokoalaconfig.DefaultMap{
 								CRS:   "EPSG:28992",
 								Width: 1024, Height: 768,
@@ -325,15 +335,20 @@ func Test_newOpenAPI(t *testing.T) {
 func Test_newOpenAPI_stylesPaths(t *testing.T) {
 	baseURL := gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "api.foobar.example", Path: "/"}}
 	maps := &gokoalaconfig.OgcAPIMaps{
-		WMSServer: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
-		MaxWidth:  6000, MaxHeight: 3000,
+		Backend: &gokoalaconfig.MapsBackend{
+			Type: "externalWms",
+			ExternalWMS: &gokoalaconfig.ExternalWMSBackend{
+				URL: &gokoalaconfig.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+			},
+		},
+		MaxWidth: 6000, MaxHeight: 3000,
 		DefaultMap: gokoalaconfig.DefaultMap{
 			CRS: "EPSG:28992", Width: 1024, Height: 768,
 			Bbox: []string{"10000", "300000", "280000", "620000"},
 		},
 		Collections: []gokoalaconfig.MapsCollection{{
 			ID:           "map1",
-			Layers:       []gokoalaconfig.MapLayer{{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", WMSStyle: "default"}}}},
+			Layers:       []gokoalaconfig.MapLayer{{ID: "layer1", Name: "layer1", Styles: []gokoalaconfig.MapStyle{{ID: "style1", Title: "Style 1", StyleName: "default"}}}},
 			SupportedSrs: []gokoalaconfig.MapsSupportedSrs{{Srs: "EPSG:28992"}},
 		}},
 	}

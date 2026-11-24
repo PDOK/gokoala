@@ -139,7 +139,10 @@ ogcApi:
 
   maps:
     basemap: BRT
-    wmsServer: https://example.com/wms
+    backend:
+      type: externalWms
+      externalWms:
+        url: https://example.com/wms
     defaultMap:
       crs: EPSG:28992
       width: 1024
@@ -155,12 +158,12 @@ ogcApi:
             styles:
               - id: default
                 title: Addresses
-                # style name as advertised by the WMS service
-                wmsStyle: default
+                # style name as advertised by the backend service
+                styleName: default
                 legendPath: ./examples/resources/3d.png # not a real legenda, just an image for demo purposes
               - id: labels
                 title: Addresses with labels
-                wmsStyle: addresses-labels
+                styleName: addresses-labels
                 legendPath: ./examples/resources/3d.png # not a real legenda, just an image for demo purposes
         supportedSrs:
           - srs: EPSG:28992

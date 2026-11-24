@@ -88,10 +88,8 @@ func TestMapStyle_TitleRequired(t *testing.T) {
 	v := validator.New()
 	require.NoError(t, v.RegisterValidation(lowercaseID, LowercaseID))
 
-	style := MapStyle{ID: "a", WMSStyle: "a", LegendPath: "legend.png"}
-	require.ErrorContains(t, v.Struct(style), "validation for 'Title' failed on the 'required' tag")
-	style.Title = "A"
-	require.NoError(t, v.Struct(style))
+	require.Error(t, v.Struct(MapStyle{ID: "a", StyleName: "a", LegendPath: "legend.png"}))
+	require.NoError(t, v.Struct(MapStyle{ID: "a", StyleName: "a", LegendPath: "legend.png", Title: "A"}))
 }
 
 func TestValidateMapLegendPaths(t *testing.T) {

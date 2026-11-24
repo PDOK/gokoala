@@ -250,10 +250,10 @@ func newTestStylesEngine(t *testing.T, withTiles, withMaps, mapsNoStyles bool) *
 		e.Config.OgcAPI.Maps = testMapsConfig()
 		e.Config.OgcAPI.Maps.Collections = []config.MapsCollection{
 			{ID: "gemeenten", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "geannoteerd", Title: "Met labels", WMSStyle: "default", LegendPath: "resources/legend.svg"},
+				{ID: "geannoteerd", Title: "Met labels", StyleName: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 			{ID: "province", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "standaard", Title: "Standaard", WMSStyle: "default", LegendPath: "resources/legend.svg"},
+				{ID: "standaard", Title: "Standaard", StyleName: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 		}
 		if mapsNoStyles {
@@ -414,7 +414,12 @@ func TestStyles_HTML(t *testing.T) {
 
 func testMapsConfig() *config.OgcAPIMaps {
 	return &config.OgcAPIMaps{
-		WMSServer: &config.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+		Backend: &config.MapsBackend{
+			Type: "externalWms",
+			ExternalWMS: &config.ExternalWMSBackend{
+				URL: &config.URL{URL: &url.URL{Scheme: "https", Host: "wms.foobar.example", Path: "/wms"}},
+			},
+		},
 		MaxWidth:  4000,
 		MaxHeight: 4000,
 		DefaultMap: config.DefaultMap{
@@ -430,7 +435,7 @@ func testMapsConfig() *config.OgcAPIMaps {
 				SupportedSrs: []config.MapsSupportedSrs{{Srs: "EPSG:28992"}},
 				Bbox:         []string{"10000", "300000", "280000", "620000"},
 				Layers: []config.MapLayer{
-					{ID: "l1", Name: "l1", Styles: []config.MapStyle{{ID: "geannoteerd", Title: "Met labels", WMSStyle: "default"}}},
+					{ID: "l1", Name: "l1", Styles: []config.MapStyle{{ID: "geannoteerd", Title: "Met labels", StyleName: "default"}}},
 				},
 			},
 		},

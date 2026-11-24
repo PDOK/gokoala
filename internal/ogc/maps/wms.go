@@ -86,7 +86,7 @@ func getStyledLayerDescriptor(mapRequest *MapRequest, collection *config.MapsCol
 			foundStyle := false
 			for _, style := range layer.Styles {
 				if style.ID == mapRequest.style {
-					namedLayer.NamedStyle = &wms130.NamedStyle{Name: style.WMSStyle}
+					namedLayer.NamedStyle = &wms130.NamedStyle{Name: style.StyleName}
 					foundStyle = true
 					break
 				}

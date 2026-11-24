@@ -12,11 +12,16 @@ import (
 )
 
 var mapsConfig = &config.OgcAPIMaps{
-	WMSServer: &config.URL{
-		URL: &url.URL{
-			Scheme: "https",
-			Host:   "example.com",
-			Path:   "/wms",
+	Backend: &config.MapsBackend{
+		Type: "externalWms",
+		ExternalWMS: &config.ExternalWMSBackend{
+			URL: &config.URL{
+				URL: &url.URL{
+					Scheme: "https",
+					Host:   "example.com",
+					Path:   "/wms",
+				},
+			},
 		},
 	},
 	DefaultMap: config.DefaultMap{
@@ -35,8 +40,8 @@ var mapsConfig = &config.OgcAPIMaps{
 					ID:   "layer1",
 					Name: "layer1",
 					Styles: []config.MapStyle{
-						{ID: "default", Title: "Default", WMSStyle: "default"},
-						{ID: "terrain", Title: "Terrain", WMSStyle: "terrain"},
+						{ID: "default", Title: "Default", StyleName: "default"},
+						{ID: "terrain", Title: "Terrain", StyleName: "terrain"},
 					},
 				},
 			},
