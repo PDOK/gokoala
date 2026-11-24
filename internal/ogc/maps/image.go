@@ -27,6 +27,12 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 	}
 
 	mapsConfig := m.engine.Config.OgcAPI.Maps
+	wmsURL := mapsConfig.Backend.WMSURL()
+	if wmsURL == nil || wmsURL.URL == nil {
+		log.Print("invalid WMS backend: selected WMS URL is missing")
+		engine.RenderProblem(engine.ProblemServerError, w)
+		return
+	}
 	getMapRequest, err := buildGetMapRequest(&request, mapsConfig)
 	if err != nil {
 		log.Printf("failed to build WMS request: %v", err)
@@ -34,7 +40,7 @@ func (m imageMaps) renderMapsImage(w http.ResponseWriter, r *http.Request, reque
 		return
 	}
 
-	target := *mapsConfig.Backend.ExternalWMS.URL.URL
+	target := *wmsURL.URL
 	params := target.Query()
 	getMapParams := getMapRequest.ToQueryParameters()
 	for key, values := range getMapParams {

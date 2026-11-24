@@ -39,23 +39,6 @@ type OgcAPIMaps struct {
 	Collections MapsCollections `yaml:"collections" json:"collections" validate:"required,min=1,dive"`
 }
 
-// +kubebuilder:object:generate=true
-// +kubebuilder:validation:XValidation:rule="self.type == 'externalWms' && has(self.externalWms)",message="externalWms configuration is required when type is externalWms"
-type MapsBackend struct {
-	// Type of backend used to render maps.
-	// +kubebuilder:validation:Enum=externalWms
-	Type string `yaml:"type" json:"type" validate:"required,oneof=externalWms"`
-
-	// Configuration for an external WMS backend.
-	ExternalWMS *ExternalWMSBackend `yaml:"externalWms,omitempty" json:"externalWms,omitempty" validate:"required"`
-}
-
-// +kubebuilder:object:generate=true
-type ExternalWMSBackend struct {
-	// Base URL of the external WMS service.
-	URL *URL `yaml:"url" json:"url" validate:"required"`
-}
-
 type MapsCollections []MapsCollection
 
 // ContainsID check if a given collection - by ID - exists.
