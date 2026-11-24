@@ -117,7 +117,7 @@ func TestValidateMapLegendPaths(t *testing.T) {
 			}}
 
 			err := validateMapLegendPaths(collections)
-			if tt.wantErr  {
+			if tt.wantErr {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
