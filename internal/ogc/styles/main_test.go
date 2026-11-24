@@ -223,8 +223,8 @@ func TestStyles_JSON(t *testing.T) {
 						types = append(types, l.Type)
 						titles = append(titles, l.Title)
 					}
-					assert.Equal(t, []string{"image/png", "image/jpeg", "text/html"}, types, s.ID)
-					assert.Equal(t, []string{s.Title + " as PNG", s.Title + " as JPEG", s.Title + " as HTML"}, titles, s.ID)
+					assert.Equal(t, []string{"image/png", "image/jpeg", "text/html", "image/svg+xml"}, types, s.ID)
+					assert.Equal(t, []string{s.Title + " as PNG", s.Title + " as JPEG", s.Title + " as HTML", "Legend for " + s.Title}, titles, s.ID)
 				}
 			}
 			assert.Equal(t, tt.wantIDs, gotIDs)
@@ -250,10 +250,10 @@ func newTestStylesEngine(t *testing.T, withTiles, withMaps, mapsNoStyles bool) *
 		e.Config.OgcAPI.Maps = testMapsConfig()
 		e.Config.OgcAPI.Maps.Collections = []config.MapsCollection{
 			{ID: "gemeenten", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "geannoteerd", Title: "Met labels", StyleName: "default"},
+				{ID: "geannoteerd", Title: "Met labels", StyleName: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 			{ID: "province", Layers: []config.MapLayer{{ID: "l", Name: "l", Styles: []config.MapStyle{
-				{ID: "standaard", Title: "Standaard", StyleName: "default"},
+				{ID: "standaard", Title: "Standaard", StyleName: "default", LegendPath: "resources/legend.svg"},
 			}}}},
 		}
 		if mapsNoStyles {
@@ -282,7 +282,7 @@ func TestStyles_Markdown(t *testing.T) {
 		{
 			name:        "maps only",
 			withMaps:    true,
-			contains:    []string{"Available Styles", "### Met labels", "min_gemeenten_geannoteerd", "### Standaard", "min_province_standaard", "/collections/gemeenten/styles/geannoteerd/map?f=png", "/map?f=jpeg", "/map?f=html"},
+			contains:    []string{"Available Styles", "### Met labels", "min_gemeenten_geannoteerd", "### Standaard", "min_province_standaard", "/collections/gemeenten/styles/geannoteerd/map?f=png", "/map?f=jpeg", "/map?f=html", "/collections/gemeenten/styles/geannoteerd/legend"},
 			notContains: []string{"Mapbox style"},
 		},
 		{
@@ -338,15 +338,16 @@ func TestStyles_HTML(t *testing.T) {
 				`data-kind="mapbox" data-url="styles/default__webmercatorquad" data-metadata="styles/default__webmercatorquad/metadata" data-format="Mapbox style" data-proj="WebMercatorQuad" data-viewer="tiles">Test style (WebMercatorQuad)`,
 			},
 			contains:    []string{`id="styles-viewer"`, "<app-vectortile-view"},
-			notContains: []string{`data-kind="map"`},
+			notContains: []string{`data-kind="map"`, `id="legend-row"`},
 		},
 		{
 			name:     "maps only",
 			withMaps: true,
 			wantOptions: []string{
-				`data-kind="map" data-url="collections/gemeenten/styles/geannoteerd/map" data-metadata="collections/gemeenten/styles" data-format="PNG/JPEG">Met labels`,
-				`data-kind="map" data-url="collections/province/styles/standaard/map" data-metadata="collections/province/styles" data-format="PNG/JPEG">Standaard`,
+				`data-kind="map" data-url="collections/gemeenten/styles/geannoteerd/map" data-legend="collections/gemeenten/styles/geannoteerd/legend" data-metadata="collections/gemeenten/styles" data-format="PNG/JPEG">Met labels`,
+				`data-kind="map" data-url="collections/province/styles/standaard/map" data-legend="collections/province/styles/standaard/legend" data-metadata="collections/province/styles" data-format="PNG/JPEG">Standaard`,
 			},
+			contains:    []string{`id="legend-row"`},
 			notContains: []string{`data-kind="mapbox"`, "data-viewer", `id="styles-viewer"`, "<app-vectortile-view"},
 		},
 		{
@@ -356,7 +357,7 @@ func TestStyles_HTML(t *testing.T) {
 			wantOptions: []string{
 				"Test style (NetherlandsRDNewQuad)", "Test style (WebMercatorQuad)", "Met labels", "Standaard",
 			},
-			contains: []string{`id="styles-viewer"`},
+			contains: []string{`id="styles-viewer"`, `id="legend-row"`, `data-legend="collections/gemeenten/styles/geannoteerd/legend"`},
 		},
 		{
 			name:         "maps collection without styles",

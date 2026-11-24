@@ -65,6 +65,7 @@ ogcApi:
                 title: Gemeentegebied
                 # style name as advertised by the backend service
                 styleName: Gemeentegebied
+                legendPath: ./examples/resources/Gemeentegebied.png # demo image
       - id: provinciegebied
         metadata:
           title: Provinciegebied
@@ -92,6 +93,7 @@ ogcApi:
                 title: Provinciegebied
                 # style name as advertised by the backend service
                 styleName: Provinciegebied
+                legendPath: ./examples/resources/Provinciegebied.png # demo image
       - id: landgebied
         metadata:
           title: Landgebied
@@ -119,3 +121,4 @@ ogcApi:
                 title: Landgebied
                 # style name as advertised by the backend service
                 styleName: Landgebied
+                legendPath: ./examples/resources/Landgebied.png # demo image

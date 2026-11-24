@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -86,8 +88,42 @@ func TestMapStyle_TitleRequired(t *testing.T) {
 	v := validator.New()
 	require.NoError(t, v.RegisterValidation(lowercaseID, LowercaseID))
 
-	require.Error(t, v.Struct(MapStyle{ID: "a", StyleName: "a"}))
-	require.NoError(t, v.Struct(MapStyle{ID: "a", StyleName: "a", Title: "A"}))
+	require.Error(t, v.Struct(MapStyle{ID: "a", StyleName: "a", LegendPath: "legend.png"}))
+	require.NoError(t, v.Struct(MapStyle{ID: "a", StyleName: "a", LegendPath: "legend.png", Title: "A"}))
+}
+
+func TestValidateMapLegendPaths(t *testing.T) {
+	dir := t.TempDir()
+	legend := filepath.Join(dir, "legend.png")
+	require.NoError(t, os.WriteFile(legend, nil, 0o600))
+
+	for _, tt := range []struct {
+		name    string
+		path    string
+		wantErr bool
+	}{
+		{name: "empty", wantErr: true},
+		{name: "existing file", path: legend},
+		{name: "missing file", path: filepath.Join(dir, "missing.png"), wantErr: true},
+		{name: "directory", path: dir, wantErr: true},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			collections := MapsCollections{{
+				ID: "collection",
+				Layers: []MapLayer{{
+					ID:     "layer",
+					Styles: []MapStyle{{ID: "style", LegendPath: tt.path}},
+				}},
+			}}
+
+			err := validateMapLegendPaths(collections)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestValidateMapCollections_AmbiguousStyleIDs(t *testing.T) {

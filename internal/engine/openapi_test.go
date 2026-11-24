@@ -167,6 +167,7 @@ func Test_newOpenAPI(t *testing.T) {
 				"/collections/map1/map",
 				"/collections/map2/map",
 				"/collections/map1/styles/{styleId}/map",
+				"/collections/map1/styles/{styleId}/legend",
 				"map1.collection.getMap",
 				"map2.collection.getMap",
 				"image/png",

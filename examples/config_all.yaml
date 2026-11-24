@@ -158,11 +158,13 @@ ogcApi:
             styles:
               - id: default
                 title: Addresses
-                # style name as advertised by the WMS service
+                # style name as advertised by the backend service
                 styleName: default
+                legendPath: ./examples/resources/3d.png # not a real legend, just an image for demo purposes
               - id: labels
                 title: Addresses with labels
                 styleName: addresses-labels
+                legendPath: ./examples/resources/3d.png # not a real legend, just an image for demo purposes
         supportedSrs:
           - srs: EPSG:28992
 
@@ -183,6 +185,6 @@ ogcApi:
           - keyword1
           - keyword2
         lastUpdated: "2023-02-24T11:27:00Z"
-        legend: 3d.png # not a real legenda, just an image for demo purposes
+        legend: 3d.png # not a real legend, just an image for demo purposes
         formats:
           - format: "mapbox"

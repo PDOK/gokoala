@@ -30,6 +30,7 @@
 
 - **Style:** {{ $.Config.MapsStyleID $coll.ID $style.ID }}
 - **Map:** [PNG]({{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=png), [JPEG]({{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=jpeg), [HTML]({{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=html)
+- **{{ i18n "Legend" }}:** [{{ i18n "Legend" }}]({{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/legend)
 
 {{ end -}}
 {{ end -}}

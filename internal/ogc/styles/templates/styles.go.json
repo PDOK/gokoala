@@ -90,7 +90,13 @@
           "type": "text/html",
           "title": {{ mustToRawJson (printf "%s as HTML" $style.Title) }},
           "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/map?f=html"
-        }
+        },
+	{
+	  "rel": "https://www.opengis.net/def/rel/ogc/1.0/legend",
+	  "type": {{ mustToRawJson $style.LegendMediaType }},
+	  "title": {{ mustToRawJson (printf "Legend for %s" $style.Title) }},
+	  "href": "{{ $baseUrl }}/collections/{{ $coll.ID }}/styles/{{ $style.ID }}/legend"
+	}
       ]
     }
     {{ end }}
