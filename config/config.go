@@ -269,6 +269,7 @@ func validate(config *Config) error {
 		errs = append(errs, validateTileProjections(config.OgcAPI.Tiles))
 	}
 	if config.OgcAPI.Maps != nil {
+		errs = append(errs, validateMapBackend(config.OgcAPI.Maps.Backend))
 		errs = append(errs, validateMapCollections(config.OgcAPI.Maps.Collections, config.OgcAPI.Maps.DefaultMap.CRS))
 		errs = append(errs, validateMapDefaults(config.OgcAPI.Maps.DefaultMap))
 		errs = append(errs, validateMapLimits(config.OgcAPI.Maps))
