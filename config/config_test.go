@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/PDOK/gokoala/internal/engine/types"
@@ -94,6 +95,67 @@ func TestNewConfig(t *testing.T) {
 	}
 }
 
+func TestRecordsConfig(t *testing.T) {
+	configYAML := `
+version: 1.0.0
+title: Records API
+serviceIdentifier: records
+abstract: Dataset records
+baseUrl: http://localhost:8080
+license:
+  name: CC0
+  url: https://creativecommons.org/publicdomain/zero/1.0/
+ogcApi:
+  records:
+		datasource:
+			postgres:
+				host: localhost
+				databaseName: records
+				user: records
+				pass: records
+    collections:
+      - id: datasets
+				metadata:
+					title: Example datasets
+					description: Downloadable Example datasets
+				sortables: [title, type]
+				defaultSortOrder:
+					- field: title
+						direction: asc
+				records:
+					- id: bgt-example
+						stacVersion: 1.1.0
+						stacExtensions:
+							- https://stac-extensions.github.io/table/v1.3.0/schema.json
+						geometry: null
+						properties:
+							datetime: null
+							start_datetime: '2025-01-01T00:00:00Z'
+							end_datetime: '2025-12-31T23:59:59Z'
+						assets:
+							geoparquet:
+								href: https://example.org/example.parquet
+								type: application/vnd.apache.parquet
+								roles: [data]
+								fields:
+									table:primary_geometry: geometry
+`
+	configYAML = strings.ReplaceAll(configYAML, "\t", "  ")
+
+	var cfg Config
+	require.NoError(t, yaml.Unmarshal([]byte(configYAML), &cfg))
+	require.NotNil(t, cfg.OgcAPI.Records)
+	require.Len(t, cfg.OgcAPI.Records.Collections, 1)
+	assert.Equal(t, "datasets", cfg.OgcAPI.Records.Collections[0].ID)
+	assert.Equal(t, []string{"title", "type"}, cfg.OgcAPI.Records.Collections[0].Sortables)
+	assert.Equal(t, "asc", cfg.OgcAPI.Records.Collections[0].DefaultSortOrder[0].Direction)
+	require.Len(t, cfg.OgcAPI.Records.Collections[0].Records, 1)
+	assert.Equal(t, "https://example.org/example.parquet", cfg.OgcAPI.Records.Collections[0].Records[0].Assets["geoparquet"].Href)
+	field, err := cfg.OgcAPI.Records.Collections[0].Records[0].Assets["geoparquet"].Fields["table:primary_geometry"].Any()
+	require.NoError(t, err)
+	assert.Equal(t, "geometry", field)
+}
+
 func TestAllCollections(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -104,6 +166,9 @@ func TestAllCollections(t *testing.T) {
 			name: "should return all collections from different OGC APIs",
 			config: &Config{
 				OgcAPI: OgcAPI{
+					Records: &OgcAPIRecords{
+						Collections: RecordsCollections{{ID: "records"}},
+					},
 					GeoVolumes: &OgcAPI3dGeoVolumes{
 						Collections: []GeoVolumesCollection{{ID: "volumes"}},
 					},
@@ -115,7 +180,7 @@ func TestAllCollections(t *testing.T) {
 					},
 				},
 			},
-			expectedOrder: []string{"features", "tiles", "volumes"}, // Alphabetical default
+			expectedOrder: []string{"features", "records", "tiles", "volumes"}, // Alphabetical default
 		},
 		{
 			name: "should respect literal order when OgcAPICollectionOrder is provided",

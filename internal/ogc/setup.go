@@ -9,6 +9,7 @@ import (
 	"github.com/PDOK/gokoala/internal/ogc/features_search"
 	"github.com/PDOK/gokoala/internal/ogc/geovolumes"
 	"github.com/PDOK/gokoala/internal/ogc/processes"
+	"github.com/PDOK/gokoala/internal/ogc/records"
 	"github.com/PDOK/gokoala/internal/ogc/styles"
 	"github.com/PDOK/gokoala/internal/ogc/tiles"
 )
@@ -28,9 +29,28 @@ func SetupBuildingBlocks(engine *engine.Engine, rewritesFile, synonymsFile strin
 	}
 	// OGC Features API
 	collectionTypes := geospatial.NewCollectionTypes(nil, nil)
+	var recordsAPI *records.Records
+	if engine.Config.OgcAPI.Records != nil {
+		var err error
+		recordsAPI, err = records.NewRecords(engine)
+		if err != nil {
+			return err
+		}
+		engine.RegisterShutdownHook(func() {
+			if err := recordsAPI.Close(); err != nil {
+				return
+			}
+		})
+	}
 	if engine.Config.OgcAPI.Features != nil {
 		f := features.NewFeatures(engine)
+		f.SetRecords(recordsAPI)
 		collectionTypes = f.GetCollectionTypes()
+		if recordsAPI != nil {
+			recordsAPI.RegisterAuxiliaryRoutes()
+		}
+	} else if recordsAPI != nil {
+		recordsAPI.RegisterItemRoutes()
 	}
 	// Features Search API, build on top of the OGC Features API
 	if engine.Config.OgcAPI.FeaturesSearch != nil {

@@ -97,6 +97,22 @@
       "title" : "The JSON representation of the list of all data layers (collections) served from this endpoint",
       "href" : "{{ .Config.BaseURL }}/collections"
     }
+    {{ if .Config.OgcAPI.Records }}
+    ,{
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog",
+      "type" : "application/json",
+      "title" : "Local resources catalog",
+      "href" : "{{ .Config.BaseURL }}/collections"
+    }
+    {{ range $collection := .Config.OgcAPI.Records.Collections }}
+    ,{
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog",
+      "type" : "application/geo+json",
+      "title" : "Records catalog {{ $collection.ID }}",
+      "href" : "{{ $.Config.BaseURL }}/collections/{{ $collection.ID }}/items"
+    }
+    {{ end }}
+    {{ end }}
     {{ end }}
     {{ if .Config.MetadataLinks }}
     ,

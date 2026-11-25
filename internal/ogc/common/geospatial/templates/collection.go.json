@@ -20,6 +20,14 @@
   {{ if and .Config.OgcAPI.GeoVolumes .Config.OgcAPI.GeoVolumes.Collections }}
   "collectionType" : "3d-container",
   {{ end }}
+  {{ if and .Config.OgcAPI.Records .Config.OgcAPI.Records.Collections ( .Config.OgcAPI.Records.Collections.ContainsID .Params.Collection.ID ) }}
+  "type" : "Collection",
+  "itemType" : "record",
+  "conformsTo" : ["http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/crawlable-catalog"],
+  {{ range $key, $value := .Params.Collection.CatalogProperties }}
+  {{ mustToRawJson $key }} : {{ mustToRawJson $value }},
+  {{ end }}
+  {{ end }}
   {{ if and .Params.Collection.Metadata .Params.Collection.Metadata.Extent }}
   "extent" : {
     {{ if ne $.Params.GeomType "none" }}
@@ -41,7 +49,7 @@
     {{- end -}}
   },
   {{ end }}
-  {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
+  {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections (not (and .Config.OgcAPI.Records .Config.OgcAPI.Records.Collections ( .Config.OgcAPI.Records.Collections.ContainsID .Params.Collection.ID ))) }}
   "itemType": "{{ $.Params.Type.ItemType }}",
   {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.SupportsNonGeoData }}
   "geometryType": "{{ $.Params.GeomType }}",
@@ -60,6 +68,9 @@
   {{ end }}
   {{- if and .Params.Collection.Metadata .Params.Collection.Metadata.LastUpdated }}
   "updated" : "{{ dateInZone "2006-01-02T15:04:05Z07:00" (toDate "2006-01-02T15:04:05Z07:00" .Params.Collection.Metadata.LastUpdated) "UTC" }}",
+  {{- end }}
+  {{- if and (hasfield .Params.Collection "DefaultSortOrder") .Params.Collection.DefaultSortOrder }}
+  "defaultSortOrder" : {{ mustToRawJson .Params.Collection.DefaultSortOrder }},
   {{- end }}
   "links" : [
     {
@@ -120,7 +131,29 @@
       "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/tiles?f=html"
     }
     {{ end }}
-    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections }}
+    {{ if and .Config.OgcAPI.Records .Config.OgcAPI.Records.Collections ( .Config.OgcAPI.Records.Collections.ContainsID .Params.Collection.ID ) }}
+    ,{
+      "rel" : "items",
+      "type" : "application/geo+json",
+      "title" : "The GeoJSON representation of the {{ .Params.Collection.ID }} records served from this endpoint",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/items?f=json"
+    }
+    ,{
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/sortables",
+      "type" : "application/schema+json",
+      "title" : "Sortable properties for {{ .Params.Collection.ID }} records",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/sortables"
+    }
+    {{ if .Params.Collection.SupportsCQL }}
+    ,{
+      "rel" : "http://www.opengis.net/def/rel/ogc/1.0/queryables",
+      "type" : "application/schema+json",
+      "title" : "Queryable properties for {{ .Params.Collection.ID }} records",
+      "href" : "{{ .Config.BaseURL }}/collections/{{ .Params.Collection.ID }}/queryables"
+    }
+    {{ end }}
+    {{ end }}
+    {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.Collections (not (and .Config.OgcAPI.Records .Config.OgcAPI.Records.Collections ( .Config.OgcAPI.Records.Collections.ContainsID .Params.Collection.ID ))) }}
     ,{
       "rel" : "items",
       "type" : "application/geo+json",

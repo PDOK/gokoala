@@ -170,6 +170,43 @@
         </div>
     {{ end }}
 
+    {{ if .Config.OgcAPI.Records }}
+        <div class="col-md-6 col-sm-12">
+            <div class="card">
+                <h2 class="card-header h5">Records</h2>
+                <div class="card-body">
+                    <table class="table table-borderless table-sm">
+                        <thead><tr><th scope="col">Conformance</th><th scope="col">Status</th></tr></thead>
+                        <tbody>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-collection</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-core-query-parameters</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/record-api</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/sorting</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/json</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/html</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/oas30</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/autodiscovery</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/crawlable-catalog</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-sorting</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/local-resources-catalog</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-extensions</td><td>{{ i18n "Draft" }}</td></tr>
+                            <tr><td>https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-items</td><td>{{ i18n "Draft" }}</td></tr>
+                            {{ if .Config.OgcAPI.Records.Collections.SupportsCQL }}
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/filtering</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog-filtering</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/cql2/1.0/conf/cql2-text</td><td>{{ i18n "Standard" }}</td></tr>
+                            <tr><td>http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2</td><td>{{ i18n "Standard" }}</td></tr>
+                            {{ end }}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {{ end }}
+
     {{ if and .Config.OgcAPI.Features .Config.OgcAPI.Features.SupportsPart3  }}
     <div class="col-md-6 col-sm-12">
         <div class="card">

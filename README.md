@@ -16,7 +16,7 @@ _Cloud Native OGC APIs server, written in Go._
 
 ## Description
 
-This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Features, Tiles, Styles, Common and GeoVolumes
+This server implements modern [OGC APIs](https://ogcapi.ogc.org/) such as Features, Tiles, Styles, Records, Common and GeoVolumes
 in a cloud-native way. It contains a complete implementation of [OGC API Features](https://ogcapi.ogc.org/features/):
 part 1 (core), part 2 (crs), part 3 (cql) and part 5 (schema). Both for GeoPackage and PostgreSQL data sources.
 
@@ -73,6 +73,11 @@ GoKoala supports:
   - Offers the ability to serve features representing "map sheets", allowing users to download a certain
     geographic area in an arbitrary format like zip, gpkg, etc.
   - Validates required indexes on startup for optimal performance.
+- [OGC API - Records](https://ogcapi.ogc.org/records/) supports Part 1 and Part 5 (STAC Items; conformance is Draft).
+  - Serves DCAT(DCAT-AP-NL 3.0) catalogs, datasets, and distributions as records and STAC assets from PostgreSQL or a local
+    GeoPackage.
+  - Serves records as GeoJSON, HTML, and Markdown. See the [Records database schema guide](internal/ogc/records/schema/README.md)
+    for database setup and schema details.
 - [OGC API Tiles](https://ogcapi.ogc.org/tiles/) serves HTML, JSON and TileJSON metadata. Act as a proxy in front
   of a vector tiles server (like Trex, Tegola, Martin) or object storage of your choosing.
   Currently, three projections (RD, ETRS89 and WebMercator) are supported. Both dataset tiles and

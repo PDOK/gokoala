@@ -32,7 +32,11 @@ var emptyFeatureCollection = &domain.FeatureCollection{Features: make([]*domain.
 // operations inside this method.
 func (f *Features) Features() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
+		if f.recordsAPI != nil && f.recordsAPI.HasCollection(chi.URLParam(r, "collectionId")) {
+			f.recordsItemsHandler.ServeHTTP(w, r)
+			return
+		}
+	    if err := f.engine.OpenAPI.ValidateRequest(r); err != nil {
 			engine.RenderProblem(engine.ProblemBadRequest, w, err.Error())
 			return
 		}

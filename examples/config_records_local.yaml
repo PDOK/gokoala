@@ -1,0 +1,15 @@
+version: 1.0.0
+title: Example Catalog
+serviceIdentifier: example
+abstract: >-
+  A local OGC API - Records example catalog backed by a GeoPackage. 
+baseUrl: http://localhost:8080
+license:
+  name: CC0 1.0
+  url: https://creativecommons.org/publicdomain/zero/1.0/deed.nl
+ogcApi:
+  records:
+    datasource:
+      geopackage:
+        local:
+          file: ./examples/resources/records.gpkg

@@ -6,16 +6,19 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
+	"github.com/PDOK/gokoala/config"
 	"github.com/PDOK/gokoala/internal/engine"
 	"github.com/stretchr/testify/require"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/text/language"
 )
 
 func init() {
@@ -25,6 +28,45 @@ func init() {
 	err := os.Chdir(dir)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func TestLandingPageDiscoversRecordsCatalogs(t *testing.T) {
+	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
+	require.NoError(t, err)
+	serverConfig := &config.Config{
+		Version:            "1.0.0",
+		Title:              "Records API",
+		ServiceIdentifier:  "records",
+		Abstract:           "Dataset records",
+		AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+		License: config.License{
+			Name: "CC0",
+			URL:  config.URL{URL: &url.URL{Scheme: "https", Host: "creativecommons.org", Path: "/publicdomain/zero/1.0/"}},
+		},
+		BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.example.org"}},
+		OgcAPI: config.OgcAPI{Records: &config.OgcAPIRecords{
+			Collections: config.RecordsCollections{{ID: "datasets"}},
+		}},
+	}
+	newEngine := engine.NewEngineWithConfig(serverConfig, theme, "", false, true)
+	core := NewCommonCore(newEngine, ExtraConformanceClasses{})
+	request := httptest.NewRequest(http.MethodGet, "https://api.example.org/?f=json", nil)
+	recorder := httptest.NewRecorder()
+	core.LandingPage().ServeHTTP(recorder, request)
+
+	require.Equal(t, http.StatusOK, recorder.Code)
+	assert.Contains(t, recorder.Body.String(), "http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog")
+	assert.Contains(t, recorder.Body.String(), "https://api.example.org/collections")
+	assert.Contains(t, recorder.Body.String(), "https://api.example.org/collections/datasets/items")
+
+	for _, format := range []string{"html", "md"} {
+		request := httptest.NewRequest(http.MethodGet, "https://api.example.org/?f="+format, nil)
+		recorder := httptest.NewRecorder()
+		core.LandingPage().ServeHTTP(recorder, request)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "rel=\"http://www.opengis.net/def/rel/ogc/1.0/ogc-catalog\"")
+		assert.Contains(t, recorder.Body.String(), "collections/datasets/items")
 	}
 }
 
@@ -189,6 +231,46 @@ func TestCommonCore_Conformance(t *testing.T) {
 			assert.Equal(t, tt.want.statusCode, rr.Code)
 			assert.Contains(t, rr.Body.String(), tt.want.body)
 		})
+	}
+}
+
+func TestRecordsConformanceClasses(t *testing.T) {
+	theme, err := config.NewTheme("internal/engine/testdata/test_theme.yaml")
+	require.NoError(t, err)
+	enableCQL := true
+	serverConfig := &config.Config{
+		Version:            "1.0.0",
+		Title:              "Records API",
+		ServiceIdentifier:  "records",
+		Abstract:           "Dataset records",
+		AvailableLanguages: []config.Language{{Tag: language.Dutch}},
+		License: config.License{
+			Name: "CC0",
+			URL:  config.URL{URL: &url.URL{Scheme: "https", Host: "creativecommons.org", Path: "/publicdomain/zero/1.0/"}},
+		},
+		BaseURL: config.URL{URL: &url.URL{Scheme: "https", Host: "api.example.org"}},
+		OgcAPI: config.OgcAPI{Records: &config.OgcAPIRecords{
+			Collections: config.RecordsCollections{{
+				ID: "datasets",
+				Filters: config.FeatureFilters{
+					Properties: []config.Queryable{{Name: "title"}},
+					CQL:        config.CQL{Enable: &enableCQL},
+				},
+			}},
+		}},
+	}
+	newEngine := engine.NewEngineWithConfig(serverConfig, theme, "", false, true)
+	core := NewCommonCore(newEngine, ExtraConformanceClasses{})
+	for _, format := range []string{"json", "html", "md"} {
+		request := httptest.NewRequest(http.MethodGet, "https://api.example.org/conformance?f="+format, nil)
+		recorder := httptest.NewRecorder()
+		core.Conformance().ServeHTTP(recorder, request)
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Contains(t, recorder.Body.String(), "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/searchable-catalog")
+		assert.Contains(t, recorder.Body.String(), "https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-extensions")
+		assert.Contains(t, recorder.Body.String(), "https://www.opengis.net/spec/ogcapi-records-5/1.0/conf/stac-items")
+		assert.Contains(t, recorder.Body.String(), "http://www.opengis.net/spec/ogcapi-records-1/1.0/conf/filtering")
+		assert.Contains(t, recorder.Body.String(), "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text")
 	}
 }
 

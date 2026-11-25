@@ -1,0 +1,17 @@
+{{- /*gotype: github.com/PDOK/gokoala/internal/engine.TemplateData*/ -}}
+{{define "content"}}
+<hgroup>
+  <h1>{{ .Params.CollectionID }} records</h1>
+  <p>{{ .Params.NumberMatched }} matching records</p>
+</hgroup>
+<ul>
+  {{range .Params.Items}}
+  <li>
+    <a href="{{.Href}}">{{.Title}}</a>
+    {{if .Description}}<p>{{.Description}}</p>{{end}}
+  </li>
+  {{else}}
+  <li>No records found.</li>
+  {{end}}
+</ul>
+{{end}}
