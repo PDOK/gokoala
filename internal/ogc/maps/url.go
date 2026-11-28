@@ -29,17 +29,18 @@ const (
 )
 
 var mapsKnownParams = map[string]struct{}{
-	engine.FormatParam: {},
-	CrsParam:           {},
-	BboxParam:          {},
-	BboxCrsParam:       {},
-	CenterParam:        {},
-	CenterCrsParam:     {},
-	WidthParam:         {},
-	HeightParam:        {},
-	Transparent:        {},
-	MMPerPixel:         {},
-	ScaleDenominator:   {},
+	engine.FormatParam:   {},
+	engine.LanguageParam: {},
+	CrsParam:             {},
+	BboxParam:            {},
+	BboxCrsParam:         {},
+	CenterParam:          {},
+	CenterCrsParam:       {},
+	WidthParam:           {},
+	HeightParam:          {},
+	Transparent:          {},
+	MMPerPixel:           {},
+	ScaleDenominator:     {},
 }
 
 type mapsURL struct {
