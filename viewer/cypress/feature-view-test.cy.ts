@@ -1,5 +1,6 @@
 import { idle, injectAxe, intercept, logAccessibility, mountFeatureComponent, screenshot } from './shared'
 import { CRS_TEST_DEFINITIONS } from './fixtures/crs-definitions'
+import { Point } from 'ol/geom'
 
 type ProjectionTest = { code: string; testName: string; projection: string; geofix: string }
 
@@ -77,4 +78,29 @@ tests.forEach(i => {
         })
     })
   })
+})
+
+describe('feature view tooltip links', () => {
+  for (const [itemsUrl, expectedUrl] of [
+    ['https://test/items', 'https://test/items/1'],
+    ['https://test/items/1?f=json', 'https://test/items/1'],
+  ]) {
+    it(`links feature from ${itemsUrl} to ${expectedUrl}`, () => {
+      intercept('amsterdam-wgs84.json', false, 'https://test/**')
+      mountFeatureComponent(tests[0].projection, 'OSM', 'default', JSON.stringify(CRS_TEST_DEFINITIONS), {
+        itemUrls: [itemsUrl],
+      }).then(({ component }) => {
+        const point = component.features[0].getGeometry() as Point
+        const pixel = component.map.getPixelFromCoordinate(point.getCoordinates())
+        if (!pixel) throw new Error('feature is not visible on the map')
+        const bounds = component.map.getViewport().getBoundingClientRect()
+        cy.get('.ol-viewport').trigger('pointermove', {
+          clientX: bounds.left + pixel[0],
+          clientY: bounds.top + pixel[1],
+          eventConstructor: 'MouseEvent',
+        })
+        cy.get('#tooltip a').should('have.attr', 'href', expectedUrl)
+      })
+    })
+  }
 })

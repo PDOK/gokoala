@@ -30,11 +30,12 @@ const (
 type Postgres struct {
 	common.DatasourceCommon
 
-	db         *pgxpool.Pool
-	schemaName string
+	db          *pgxpool.Pool
+	schemaName  string
+	searchIndex *common.Table // only available when features search is configured
 }
 
-func NewPostgres(collections config.FeaturesCollections, pgConfig config.Postgres,
+func NewPostgres(collections config.FeaturesCollections, searchIndexName string, pgConfig config.Postgres,
 	transformOnTheFly bool, maxDecimals int, forceUTC bool) (*Postgres, error) {
 
 	if !transformOnTheFly {
@@ -71,6 +72,12 @@ func NewPostgres(collections config.FeaturesCollections, pgConfig config.Postgre
 
 	pg.TableByCollectionID, pg.QueryablesByCollectionID = readMetadata(
 		db, collections, pg.FidColumn, pg.ExternalFidColumn, pg.schemaName)
+
+	if searchIndexName != "" {
+		if pg.searchIndex, err = readSearchIndex(db, searchIndexName, pg.schemaName); err != nil {
+			return nil, err
+		}
+	}
 
 	if err = assertIndexesExist(collections, pg.TableByCollectionID, db, *pgConfig.SpatialIndexRequired); err != nil {
 		return nil, err
@@ -159,7 +166,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 			return nil, nil
 		}
 		fidColumn = pg.FidColumn
-		fidTypeCast = "::bigint" // always compare as 64-bits integer, regardless of numeric type in schema
+		fidTypeCast = "::bigint" // always compare param (not column) as 64-bits integer, regardless of numeric type in schema.
 	case uuid.UUID:
 		if pg.ExternalFidColumn == "" {
 			// Features should be retrieved by int64
@@ -181,7 +188,7 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 		srid = d.WGS84SRIDPostgis
 	}
 
-	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s"%[4]s = @fid%[4]s limit 1`,
+	query := fmt.Sprintf(`select %[1]s from "%[2]s" where "%[3]s" = @fid%[4]s limit 1`,
 		selectClause, table.Name, fidColumn, fidTypeCast)
 	rows, err := pg.db.Query(queryCtx, query, pgx.NamedArgs{"fid": featureID, "outputSrid": srid})
 	if err != nil {
@@ -207,8 +214,11 @@ func (pg *Postgres) GetFeature(ctx context.Context, collection string, featureID
 }
 
 func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteria ds.FeaturesSearchCriteria,
-	axisOrder d.AxisOrder, collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
+	collections search.CollectionsWithParams) (*d.FeatureCollection, error) {
 
+	if pg.searchIndex == nil {
+		return nil, errors.New("search index not configured")
+	}
 	queryCtx, cancel := context.WithTimeout(ctx, pg.QueryTimeout) // https://go.dev/doc/database/cancel-operations
 	defer cancel()
 
@@ -220,11 +230,11 @@ func (pg *Postgres) SearchFeaturesAcrossCollections(ctx context.Context, criteri
 		criteria.OutputSRID = d.WGS84SRIDPostgis
 	}
 
-	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, "r."+searchGeomColumn, axisOrder)
+	bboxFilter, bboxQueryArgs, err := bboxToSQL(criteria.Bbox, criteria.InputSRID, pg.searchIndex, criteria.InputAxisOrder)
 	if err != nil {
 		return nil, err
 	}
-	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, axisOrder)
+	sql := makeSearchQuery(criteria.Settings.IndexName, bboxFilter, criteria.OutputAxisOrder)
 	wildcardQuery := criteria.SearchQuery.ToWildcardQuery()
 	exactMatchQuery := criteria.SearchQuery.ToExactMatchQuery(criteria.Settings.SynonymsExactMatch)
 	untokenizedQuery := criteria.SearchQuery.ToUntokenizedQuery()
@@ -300,7 +310,7 @@ func (pg *Postgres) makeFeaturesQuery(propConfig *config.FeatureProperties, rela
 	var bboxNamedParams map[string]any
 	if criteria.Bbox != nil {
 		var err error
-		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table.GeometryColumnName, criteria.InputAxisOrder)
+		bboxClause, bboxNamedParams, err = bboxToSQL(criteria.Bbox, criteria.InputSRID, table, criteria.InputAxisOrder)
 		if err != nil {
 			return "", nil, err
 		}
@@ -475,20 +485,20 @@ func makeSearchQuery(index string, bboxFilter string, axisOrder d.AxisOrder) str
 	LIMIT (@lm::int)`, index, selectGeom, selectBbox, bboxFilter) // don't add user input here, use named params for user input!
 }
 
-func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, axisOrder d.AxisOrder) (string, map[string]any, error) {
+// bboxToSQL transforms the bbox to the SRID of the geometry column,
+// so the bbox is constant during the query and the spatial index can be used.
+func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, table *common.Table, axisOrder d.AxisOrder) (string, map[string]any, error) {
 	var bboxFilter, bboxWkt string
 	var bboxNamedParams map[string]any
 	var err error
 	if bbox != nil {
-		bboxFilter = fmt.Sprintf(`and
-				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_geomfromtext(@bboxWkt::text, @bboxSrid::int))
-			`, geomColumn)
-
+		bboxGeom := "st_geomfromtext(@bboxWkt::text, @bboxSrid::int)"
 		if axisOrder == d.AxisOrderYX {
-			bboxFilter = fmt.Sprintf(`and
-				st_intersects(st_transform(%[1]s, @bboxSrid::int), st_flipcoordinates(st_geomfromtext(@bboxWkt::text, @bboxSrid::int)))
-			`, geomColumn)
+			bboxGeom = fmt.Sprintf("st_flipcoordinates(%s)", bboxGeom)
 		}
+		bboxFilter = fmt.Sprintf(`and
+				st_intersects("%[1]s", st_transform(%[2]s, @geomSrid::int))
+			`, table.GeometryColumnName, bboxGeom)
 
 		bboxWkt, err = wkt.Marshal(bbox.Polygon())
 		if err != nil {
@@ -497,6 +507,7 @@ func bboxToSQL(bbox *geom.Bounds, bboxSRID d.SRID, geomColumn string, axisOrder 
 		bboxNamedParams = map[string]any{
 			"bboxWkt":  bboxWkt,
 			"bboxSrid": bboxSRID.GetOrDefault(),
+			"geomSrid": table.GeometryColumnSRID,
 		}
 	}
 

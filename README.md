@@ -122,8 +122,8 @@ GLOBAL OPTIONS:
 
 Example (config-file is mandatory):
 
-```docker
-docker run -v `pwd`/examples:/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
+```bash
+docker run -v "$(pwd)/examples":/examples -p 8080:8080 -it pdok/gokoala --config-file /examples/config_vectortiles.yaml
 ```
 
 Now open <http://localhost:8080>. See [examples](examples) for more details.
@@ -154,7 +154,7 @@ For example:
 - Mount `mytheme` as a volume and start GoKoala with the custom theme:
 
 ```bash
-docker run -v `pwd`/examples:/examples -v `pwd`/mytheme:/mytheme -p 8080:8080 -it pdok/gokoala \
+docker run -v "$(pwd)/examples":/examples -v "$(pwd)/mytheme":/mytheme -p 8080:8080 -it pdok/gokoala \
  --config-file /examples/config_vectortiles.yaml --theme-file /mytheme/theme.yaml
 ```
 
@@ -304,8 +304,10 @@ GeoPackage and/or PostgreSQL data source.
 This only applies when Features Search (geocoding) is enabled: You can inspect the PostgreSQL buffercache for the search
 index by invoking `select * from gokoala_inspect_buffercache();` in the PostgreSQL database. The search index is
 automatically prewarmed after ETL is done. But in case you want to invoke it manually (one example would be after a
-restart of the database) you can invoke `select gokoala_prewarm_partitions();`. This function defaults to the current
-search index, but this can be overridden when desired.
+restart of the database) you can invoke `select gokoala_prewarm_partitions();`. This function defaults to the most
+recently created search index. When multiple search indexes exist in the same database, pass the search index
+explicitly, e.g. `select gokoala_prewarm_partitions(search_idx_table := 'search_index');`. The same applies to
+`gokoala_inspect_buffercache(search_idx_table := 'search_index')`.
 
 ## Develop
 

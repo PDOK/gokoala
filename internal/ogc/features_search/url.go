@@ -37,6 +37,7 @@ var (
 	searchKnownParams = map[string]struct{}{
 		queryParam:            {},
 		engine.FormatParam:    {},
+		engine.LanguageParam:  {},
 		features.LimitParam:   {},
 		features.CrsParam:     {},
 		features.BboxParam:    {},

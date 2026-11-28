@@ -399,6 +399,50 @@ func TestSearch(t *testing.T) {
 			},
 		},
 		{
+			name: "Search with bbox in RD and get output in RD",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&bbox=120500,566300,120700,566500&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/28992&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-bbox-rd-output-rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search with bbox in RD and get output in WGS84",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&bbox=120500,566300,120700,566500&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/28992&crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-bbox-rd-output-wgs84.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search with bbox in RD and get output in ETRS89",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&bbox=120500,566300,120700,566500&bbox-crs=http://www.opengis.net/def/crs/EPSG/0/28992&crs=http://www.opengis.net/def/crs/EPSG/0/4258",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-bbox-rd-output-etrs89.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
+			name: "Search with bbox in WGS84 and get output in RD",
+			fields: fields{
+				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&bbox=4.872,53.082,4.876,53.085&bbox-crs=http://www.opengis.net/def/crs/OGC/1.3/CRS84&crs=http://www.opengis.net/def/crs/EPSG/0/28992",
+				format: "json",
+			},
+			want: want{
+				body:       "internal/ogc/features_search/testdata/expected-bbox-wgs84-output-rd.json",
+				statusCode: http.StatusOK,
+			},
+		},
+		{
 			name: "Search and get output in ETRS89",
 			fields: fields{
 				url:    "http://localhost:8080/search?q=Acht&addresses[version]=1&limit=50&f=json&crs=http://www.opengis.net/def/crs/EPSG/0/4258",

@@ -400,7 +400,7 @@ func newDatasource(shutdownHook func(fn func()), cfg config.FeaturesAndSearchCon
 	case dsConfig.GeoPackage != nil:
 		datasource, err = geopackage.NewGeoPackage(cfg.FeatureCollections(), *dsConfig.GeoPackage, transformOnTheFly, maxDecimals, forceUTC)
 	case dsConfig.Postgres != nil:
-		datasource, err = postgres.NewPostgres(cfg.FeatureCollections(), *dsConfig.Postgres, transformOnTheFly, maxDecimals, forceUTC)
+		datasource, err = postgres.NewPostgres(cfg.FeatureCollections(), cfg.SearchIndexName(), *dsConfig.Postgres, transformOnTheFly, maxDecimals, forceUTC)
 	default:
 		log.Fatal("got unknown datasource type")
 	}

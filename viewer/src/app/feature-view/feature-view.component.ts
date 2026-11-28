@@ -403,7 +403,11 @@ export class FeatureViewComponent implements OnChanges, AfterViewInit, OnDestroy
               tooltipContent.innerHTML = this.itemUrls
                 .map((itemsUrl, i) => {
                   const baseUrl = new URL(itemsUrl)
-                  const link = new URL(`items/${featureId}`, baseUrl).href
+                  // A relative URL replaces the last path segment of the base URL: for .../items we must keep
+                  // 'items', for a single feature URL (.../items/{id}) we only replace the feature ID.
+                  const encodedId = encodeURIComponent(featureId)
+                  const relative = baseUrl.pathname.endsWith('/items') ? `items/${encodedId}` : encodedId
+                  const link = new URL(relative, baseUrl).href
                   const hasMany = this.itemUrls.length > 1
                   return `<a href="${link}">${featureId}  ${hasMany ? `[${i + 1}]` : ''}</a>${hasMany ? '<br />' : ''}`
                 })
