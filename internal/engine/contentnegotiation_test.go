@@ -93,7 +93,7 @@ func TestNegotiateLanguageWithCookie(t *testing.T) {
 		t.Run(tt.cookieLang+" @ "+tt.url, func(t *testing.T) {
 			req, err := http.NewRequestWithContext(t.Context(), http.MethodGet, tt.url, nil)
 			req.AddCookie(&http.Cookie{
-				Name:     languageParam,
+				Name:     LanguageParam,
 				Value:    tt.cookieLang,
 				Path:     "/",
 				MaxAge:   config.CookieMaxAge,
