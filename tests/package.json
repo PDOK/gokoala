@@ -11,9 +11,12 @@
   "license": "MIT",
   "devDependencies": {
     "axe-core": "^4.14.0",
-    "cypress": "^16.1.0",
+    "cypress": "^16.4.0",
     "cypress-html-validate": "^9.1.0",
     "html-validate": "^8.24.0",
     "typescript": "^5.3.3"
+  },
+  "allowScripts": {
+    "cypress@16.4.0": true
   }
 }
