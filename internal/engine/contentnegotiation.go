@@ -12,7 +12,7 @@ import (
 
 const (
 	FormatParam   = "f"
-	languageParam = "lang"
+	LanguageParam = "lang"
 
 	MediaTypeJSON          = "application/json"
 	MediaTypeXML           = "application/xml"
@@ -215,8 +215,8 @@ func (cn *ContentNegotiation) getFormatFromAcceptHeader(req *http.Request) strin
 func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
 	queryParams := req.URL.Query()
-	if queryParams.Get(languageParam) != "" {
-		lang := queryParams.Get(languageParam)
+	if queryParams.Get(LanguageParam) != "" {
+		lang := queryParams.Get(LanguageParam)
 		accepted, _, err := language.ParseAcceptLanguage(lang)
 		if err != nil {
 			return requestedLanguage
@@ -231,7 +231,7 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 		setLanguageCookie(w, lang)
 
 		// remove ?lang= parameter, to prepare for rewrite
-		queryParams.Del(languageParam)
+		queryParams.Del(LanguageParam)
 		req.URL.RawQuery = queryParams.Encode()
 	}
 
@@ -240,7 +240,7 @@ func (cn *ContentNegotiation) getLanguageFromQueryParam(w http.ResponseWriter, r
 
 func setLanguageCookie(w http.ResponseWriter, lang string) {
 	cookie := &http.Cookie{
-		Name:     languageParam,
+		Name:     LanguageParam,
 		Value:    lang,
 		Path:     "/",
 		MaxAge:   config.CookieMaxAge,
@@ -252,7 +252,7 @@ func setLanguageCookie(w http.ResponseWriter, lang string) {
 
 func (cn *ContentNegotiation) getLanguageFromCookie(req *http.Request) language.Tag {
 	var requestedLanguage = language.Und
-	cookie, err := req.Cookie(languageParam)
+	cookie, err := req.Cookie(LanguageParam)
 	if err != nil {
 		return requestedLanguage
 	}

@@ -44,31 +44,34 @@ var (
 	// don't include these params in checksum.
 	checksumExcludedParams = []string{
 		engine.FormatParam,
+		engine.LanguageParam,
 		cursorParam,
 	}
 
 	// request for /items should only accept these params (+ filters)
 	// defined as a set for fast lookup.
 	featuresKnownParams = map[string]struct{}{
-		engine.FormatParam: {},
-		LimitParam:         {},
-		cursorParam:        {},
-		CrsParam:           {},
-		dateTimeParam:      {},
-		BboxParam:          {},
-		BboxCrsParam:       {},
-		filterParam:        {},
-		filterCrsParam:     {},
-		filterLangParam:    {},
-		profileParam:       {},
+		engine.FormatParam:   {},
+		engine.LanguageParam: {},
+		LimitParam:           {},
+		cursorParam:          {},
+		CrsParam:             {},
+		dateTimeParam:        {},
+		BboxParam:            {},
+		BboxCrsParam:         {},
+		filterParam:          {},
+		filterCrsParam:       {},
+		filterLangParam:      {},
+		profileParam:         {},
 	}
 
 	// request for /item/{id} should only accept these params
 	// defined as a set for fast lookup.
 	featureKnownParams = map[string]struct{}{
-		engine.FormatParam: {},
-		CrsParam:           {},
-		profileParam:       {},
+		engine.FormatParam:   {},
+		engine.LanguageParam: {},
+		CrsParam:             {},
+		profileParam:         {},
 	}
 )
 
